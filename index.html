@@ -1,260 +1,526 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xarajatlarim</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="theme-color" content="#2f6fed">
-    
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xarajatlarim</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#2f6fed">
+<!-- Rejimni sahifa chizilishidan OLDIN o'rnatamiz (miltillamasligi uchun) -->
+<script>
+try {
+  var t = localStorage.getItem("tema") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = t;
+} catch (e) {}
+</script>
 <style>
-    body {
-      font-family: sans-serif;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px;
-      background: #f5f6fa;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    form button {
-      padding: 12px;
-      font-size: 16px;
-      background: #f01e1e;
-      color: white;
-      border: 0;
-      border-radius: 8px;
-    }
-    h1 {
-        text-align: center;
-    }
-        /* Jami summa */
-#jami {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 20px 0 8px;
-}
+  /* ===== 1. RANGLAR: hammasi shu yerda. Rangni o'zgartirmoqchi bo'lsang, faqat shu qatorlarni o'zgartir ===== */
+  :root {
+    --bg: #f3f4f1; --card: #ffffff; --text: #1d2327; --muted: #667075;
+    --line: #e2e5e0; --accent: #0f766e; --accent-soft: #dff1ee; --danger: #c93a3f;
+  }
+  :root[data-theme="dark"] {
+    --bg: #101416; --card: #181e21; --text: #e8ecec; --muted: #8f9a9d;
+    --line: #283033; --accent: #3fb8a8; --accent-soft: #1d3a37; --danger: #ff7a7f;
+  }
 
-/* Ro'yxatning nuqtalarini olib tashlaymiz */
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  /* ===== 2. ASOSIY ===== */
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+  }
+  .wrap { max-width: 520px; margin: 0 auto; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  small { color: var(--muted); font-size: 13px; }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Har bir yozuv: oq karta */
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  background: white;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-}
-li:hover { background: #e8e9ed; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+  label { font-size: 13px; color: var(--muted); }
+  input, select {
+    width: 100%; margin-top: 4px; padding: 10px; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text);
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .full { grid-column: 1 / -1; }
+  .btn { width: 100%; padding: 12px; font-size: 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; }
+  .btn.ikkinchi { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .ikon { background: none; border: 0; padding: 8px 10px; font-size: 18px; border-radius: 8px; color: var(--muted); }
+  .ikon:hover { background: var(--accent-soft); }
 
-/* O'chirish tugmasi */
-li button {
-  background: none;
-  border: 0;
-  color: #e5484d;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px 12px;
-}
-h3 {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  color: #6b7280;
-  margin: 20px 0 8px;
-}
-.zaxira {
-  display: flex;
-  gap: 8px;
-  margin-top: 24px;
-}
-.zaxira button {
-  flex: 1;
-  padding: 10px;
-  font-size: 14px;
-  background: white;
-  color: #1f2430;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  cursor: pointer;
-}
+  /* ===== 3. OY VA HISOBOT ===== */
+  .oy { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
+  .jami b { display: block; font-size: 30px; margin-top: 2px; }
+  .stat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .stat b { display: block; margin-top: 2px; word-break: break-word; }
 
-  </style>
+  /* Grafik: har kategoriya uchun bitta chiziq */
+  .qator { margin-bottom: 10px; }
+  .qator .ustki { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; gap: 8px; }
+  .yol { height: 8px; background: var(--accent-soft); border-radius: 4px; overflow: hidden; }
+  .yol i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+
+  /* ===== 4. RO'YXAT ===== */
+  .filtr { display: grid; grid-template-columns: 3fr 2fr; gap: 8px; }
+  .filtr input, .filtr select { margin: 0; }
+  h3 { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin: 18px 4px 8px; }
+  .yozuv { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 6px 10px 12px; margin-bottom: 6px; }
+  .yozuv .em { font-size: 22px; }
+  .yozuv .matn { flex: 1; min-width: 0; }
+  .yozuv .nom { font-weight: 600; overflow-wrap: anywhere; }
+  .yozuv .tafsilot { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .yozuv .summa { font-weight: 600; white-space: nowrap; }
+  .yozuv .ochir:hover { color: var(--danger); }
+  .bosh { text-align: center; color: var(--muted); padding: 24px 8px; }
+  .zaxira { display: flex; gap: 8px; margin-top: 24px; }
+  .zaxira .btn { font-size: 14px; padding: 10px; }
+  .katsatr { display: flex; gap: 6px; }
+  .katsatr select { flex: 1; min-width: 0; }
+  .katsatr .ikon { margin-top: 4px; padding: 0 14px; border: 1px solid var(--line); }
+  .eslatma { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--accent-soft); font-size: 14px; }
+  .eslatma .btn { width: auto; padding: 8px 12px; font-size: 14px; white-space: nowrap; }
+  #toast { position: fixed; left: 16px; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); max-width: 488px; margin: 0 auto; z-index: 10;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--text); color: var(--bg); }
+  #toast button { background: none; border: 0; font-weight: 700; text-decoration: underline; }
+</style>
+</head>
 <body>
-    
-  <h1>Xarajatlarim</h1>
+<div class="wrap">
 
-  <form>
-    <label for="nom">Nima uchun?</label>
-    <input id="nom" placeholder="Masalan: non" required>
-    <label for="miqdor">Miqdori:</label>
-    <input type="number" id="miqdor" min="1" required>
-    <label for="narx">Narxi:</label>
-    <input type="number" id="narx" min="0" required>
-    <label for="izoh">Izoh:</label>
-    <input id="izoh" placeholder="Masalan: bozordan oldim">
+  <div class="top">
+    <h1>Xarajatlarim</h1>
+    <button class="ikon" id="tema" title="Rejimni almashtirish" aria-label="Rejimni almashtirish"></button>
+  </div>
 
-    <button type="submit">Qo'shish</button>
-  </form>
-  <p id="jami"></p>
-  <ul id="royxat"></ul>
+  <div class="card eslatma" id="eslatma" hidden>
+    <span id="eslatmaMatn"></span>
+    <button class="btn" type="button" id="eslatmaTugma">Zaxira olish</button>
+  </div>
 
+  <!-- ===== FORMA ===== -->
+  <div class="card">
+    <form id="forma" class="grid">
+      <div class="full"><label for="nom">Nima uchun?</label><input id="nom" placeholder="Masalan: non" required></div>
+      <div><label for="kategoriya">Kategoriya</label><div class="katsatr"><select id="kategoriya"></select><button type="button" class="ikon" id="yangiKat" title="Yangi kategoriya" aria-label="Yangi kategoriya">+</button></div></div>
+      <div><label for="sana">Sana</label><input type="date" id="sana"></div>
+      <div><label for="miqdor">Miqdori</label><input type="number" id="miqdor" min="0.01" step="any" value="1" inputmode="decimal" required></div>
+      <div><label for="narx">Narxi (1 dona)</label><input type="number" id="narx" min="0" step="any" inputmode="decimal" required></div>
+      <div class="full"><label for="izoh">Izoh (ixtiyoriy)</label><input id="izoh" placeholder="Masalan: bozordan oldim"></div>
+      <button class="btn full" id="tugma" type="submit">Qo'shish</button>
+      <button class="btn ikkinchi full" id="bekor" type="button" hidden>Bekor qilish</button>
+    </form>
+  </div>
+
+  <!-- ===== OY HISOBOTI ===== -->
+  <div class="oy">
+    <button class="ikon" id="oldingi" aria-label="Oldingi oy">◀</button>
+    <span id="oyNomi"></span>
+    <button class="ikon" id="keyingi" aria-label="Keyingi oy">▶</button>
+  </div>
+  <div class="card">
+    <div class="jami"><small>Shu oyda jami</small><b id="jami"></b></div>
+    <div class="stat">
+      <div><small>Kunlik o'rtacha</small><b id="ortacha"></b></div>
+      <div><small>Eng katta xarajat</small><b id="eng"></b></div>
+    </div>
+  </div>
+  <div class="card"><h2>Pul qayerga ketdi?</h2><div id="grafik"></div></div>
+
+  <!-- ===== QIDIRUV VA RO'YXAT ===== -->
+  <div class="card filtr">
+    <input id="qidir" type="search" placeholder="Qidirish" aria-label="Qidirish">
+    <select id="filtrKat" aria-label="Kategoriya bo'yicha"><option value="">Hammasi</option></select>
+  </div>
+  <div id="royxat"></div>
+
+  <!-- ===== ZAXIRA ===== -->
   <div class="zaxira">
-    <button type="button" id="eksportTugma">⬇ Zaxira nusxa</button>
-    <button type="button" id="importTugma">⬆ Tiklash</button>
+    <button class="btn ikkinchi" type="button" id="eksportTugma">Zaxira nusxa</button>
+    <button class="btn ikkinchi" type="button" id="importTugma">Tiklash</button>
     <input type="file" id="fayl" accept=".json" hidden>
   </div>
-  <script>
-    // Daftar: saqlangan bo'lsa olib keladi, bo'lmasa bo'sh
-    let yozuvlar = JSON.parse(localStorage.getItem("xarajatlar")) || [];
-  
-    // Sahifadagi forma va ro'yxatni topib olamiz
-    const forma = document.querySelector("form");
-    const royxat = document.getElementById("royxat");
-  
-    // "Qo'shish" bosilganda shu ishlar bajariladi
-    forma.addEventListener("submit", function (e) {
-      e.preventDefault(); // sahifa yangilanib ketmasin
-  
-      // 1. Maydonlardagi yozuvni o'qib, bitta yozuv qilamiz
-      const yozuv = {
-        nom: document.getElementById("nom").value,
-        miqdor: Number(document.getElementById("miqdor").value),
-        narx: Number(document.getElementById("narx").value),
-        izoh: document.getElementById("izoh").value, // yangi
-        sana: new Date().toLocaleDateString("sv-SE"),
-     };
-  
-      yozuvlar.push(yozuv); // 2. Daftarga qo'shamiz
-      saqla();              // 3. Brauzer xotirasiga saqlaymiz
-      chiz();               // 4. Ekranda ko'rsatamiz
-      forma.reset();        // 5. Maydonlarni tozalaymiz
+</div>
+
+<div id="toast" hidden><span id="toastMatn"></span><button type="button" id="qaytar">Qaytarish</button></div>
+
+<script>
+  // ===== 1. SOZLAMALAR =====
+  const KALIT = "xarajatlar"; // localStorage'dagi daftar nomi. O'ZGARTIRMA, aks holda eski yozuvlar ko'rinmay qoladi
+  const STANDART = ["🍞 Oziq-ovqat", "🚌 Transport", "🏠 Uy-ro'zg'or", "👕 Kiyim", "💊 Salomatlik", "🎮 Ko'ngilochar", "📦 Boshqa"];
+  let KATEGORIYALAR = STANDART.slice(); // standart + o'zing qo'shganlar
+  try {
+    JSON.parse(localStorage.getItem("kategoriyalar") || "[]").forEach(function (k) {
+      if (typeof k === "string" && KATEGORIYALAR.indexOf(k) < 0) KATEGORIYALAR.push(k);
     });
-  
-    // Daftarni brauzer xotirasiga saqlaydi
-    function saqla() {
-      localStorage.setItem("xarajatlar", JSON.stringify(yozuvlar));
-    }
-  
-    // Daftardagi hamma yozuvni ekranga chiqaradi
-    function chiz() {
-  royxat.innerHTML = "";
-  let jami = 0;
+  } catch (e) {}
+  const OYLAR = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
-  // 1. Yozuvlarni kunlar bo'yicha qutilarga ajratamiz
-  const kunlar = {};
-  yozuvlar.forEach(function (y, i) {
-    const kalit = y.sana || "0-eski"; // sanasi yo'q eski yozuvlar uchun
-    if (!kunlar[kalit]) kunlar[kalit] = []; // quti yo'q bo'lsa, ochamiz
-    kunlar[kalit].push({ y: y, i: i });     // i: o'chirish uchun raqamini ham eslab qolamiz
-    jami = jami + y.miqdor * y.narx;
-  });
+  // ===== 2. YORDAMCHI FUNKSIYALAR =====
+  const $ = function (id) { return document.getElementById(id); };   // qisqartma: $("nom") = getElementById("nom")
+  const bugun = function () { return new Date().toLocaleDateString("sv-SE"); };            // 2026-10-03
+  const pul = function (n) { return Math.round(n).toLocaleString("ru-RU") + " so'm"; };    // 14 000 so'm
+  const summaOf = function (y) { return y.miqdor * y.narx; };
 
-  // 2. Sanalarni yangisidan eskisiga qarab chiqamiz
-  Object.keys(kunlar).sort().reverse().forEach(function (kalit) {
-    const guruh = kunlar[kalit];
+  // Element yaratish: matn textContent bilan qo'yiladi (foydalanuvchi yozgan matn kodga aylanib ketmaydi)
+  function el(tag, klass, matn) {
+    const e = document.createElement(tag);
+    if (klass) e.className = klass;
+    if (matn !== undefined) e.textContent = matn;
+    return e;
+  }
 
-    // Shu kunning jami
-    let kunJami = 0;
-    guruh.forEach(function (g) {
-      kunJami = kunJami + g.y.miqdor * g.y.narx;
-    });
+  // ===== 3. MA'LUMOT: yuklash, tekshirish, saqlash =====
+  // Har yozuvni tekshiradi va eski yozuvlarga yetishmagan maydonlarni qo'shadi
+  function tozala(royxat) {
+    const ishlatilgan = {};
+    return royxat
+      .filter(function (y) {
+        return y && typeof y.nom === "string" && y.narx !== null && y.narx !== "" &&
+               Number(y.miqdor) > 0 && Number(y.narx) >= 0; // miqdor > 0, narx >= 0
+      })
+      .map(function (y, i) {
+        let id = y.id || Date.now() + i;
+        while (ishlatilgan[id]) id++;              // id takrorlansa, yangisini beramiz
+        ishlatilgan[id] = true;
+        const kat = typeof y.kategoriya === "string" && y.kategoriya.trim() ? y.kategoriya.trim() : "📦 Boshqa";
+        if (KATEGORIYALAR.indexOf(kat) < 0) KATEGORIYALAR.push(kat);
+        return {
+          id: id,
+          nom: y.nom.trim() || "Nomsiz",
+          kategoriya: kat,
+          miqdor: Number(y.miqdor),
+          narx: Number(y.narx),
+          izoh: y.izoh || "",
+          sana: /^\d{4}-\d{2}-\d{2}$/.test(y.sana) ? y.sana : bugun() // sanasi yo'q eski yozuv: bugunga qo'yiladi
+        };
+      });
+  }
 
-    // Kun sarlavhasi
-    const sarlavha = document.createElement("h3");
-    const nomi = kalit === "0-eski" ? "Eski yozuvlar" : kalit;
-    sarlavha.innerHTML = "<span>" + nomi + "</span><span>" + kunJami + " so'm</span>";
-    royxat.appendChild(sarlavha);
+  let yozuvlar = [];
+  try {
+    yozuvlar = tozala(JSON.parse(localStorage.getItem(KALIT)) || []);
+  } catch (xato) {
+    // Daftar buzilgan bo'lsa: nusxasini saqlab qo'yamiz, ustidan yozib yubormaymiz
+    try { localStorage.setItem(KALIT + "_buzilgan", localStorage.getItem(KALIT)); } catch (e) {}
+    yozuvlar = [];
+  }
 
-    // Shu kunning yozuvlari
-    guruh.forEach(function (g) {
-      const y = g.y;
-      const summa = y.miqdor * y.narx;
-
-      const li = document.createElement("li");
-      li.textContent = y.nom + ": " + y.miqdor + " × " + y.narx + " = " + summa + " so'm" +
-        (y.izoh ? " (" + y.izoh + ")" : "") + " ";
-
-      const tugma = document.createElement("button");
-      tugma.textContent = "✕";
-      tugma.onclick = function () {
-        yozuvlar.splice(g.i, 1);
-        saqla();
-        chiz();
-      };
-
-      li.appendChild(tugma);
-      royxat.appendChild(li);
-    });
-  });
-
-  document.getElementById("jami").textContent = "Jami: " + jami + " so'm";
-}
-  // ZAXIRA NUSXA: yozuvlarni fayl qilib yuklab beradi
-document.getElementById("eksportTugma").onclick = function () {
-  const matn = JSON.stringify(yozuvlar, null, 2);
-  const blob = new Blob([matn], { type: "application/json" });
-
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "xarajatlar-zaxira-" + new Date().toLocaleDateString("sv-SE") + ".json";
-  a.click();
-};
-
-// TIKLASH: "Tiklash" tugmasi yashirin fayl maydonini bosadi
-document.getElementById("importTugma").onclick = function () {
-  document.getElementById("fayl").click();
-};
-
-// Fayl tanlanganda uni o'qiymiz
-document.getElementById("fayl").onchange = function () {
-  const fayl = this.files[0];
-  if (!fayl) return;
-
-  const oqigich = new FileReader();
-  oqigich.onload = function () {
+  function saqla() {
     try {
-      const yangi = JSON.parse(oqigich.result);
-      if (!Array.isArray(yangi)) throw new Error("noto'g'ri fayl");
-
-      if (confirm(yangi.length + " ta yozuv tiklansinmi? Hozirgilari almashtiriladi.")) {
-        yozuvlar = yangi;
-        saqla();
-        chiz();
-      }
+      localStorage.setItem(KALIT, JSON.stringify(yozuvlar));
+      localStorage.setItem("kategoriyalar", JSON.stringify(KATEGORIYALAR.filter(function (k) { return STANDART.indexOf(k) < 0; })));
     } catch (xato) {
-      alert("Fayl o'qilmadi. To'g'ri zaxira faylini tanlang.");
+      alert("Saqlab bo'lmadi. Brauzer xotirasi to'lgan bo'lishi mumkin. Zaxira nusxa oling.");
     }
-  };
-  oqigich.readAsText(fayl);
-  this.value = ""; // bir faylni ketma-ket ikki marta tanlash mumkin bo'lishi uchun
-};
-    // Sahifa ochilishi bilan saqlangan yozuvlarni ko'rsatadi
-    chiz();
-    if ("serviceWorker" in navigator && location.hostname !== "127.0.0.1") {
-  navigator.serviceWorker.register("./sw.js");
-}
-  </script>
+  }
 
+  // ===== 4. HOLAT =====
+  let oy = bugun().slice(0, 7); // ko'rilayotgan oy: "2026-10"
+  let tahrirId = null;          // tahrirlanayotgan yozuv raqami (yo'q bo'lsa null)
+
+  // ===== 5. FORMA =====
+  function kategoriyaToldir() {
+    const a = $("kategoriya").value, b = $("filtrKat").value;
+    $("kategoriya").length = 0;
+    $("filtrKat").length = 1; // "Hammasi" qoladi
+    KATEGORIYALAR.forEach(function (k) {
+      $("kategoriya").add(new Option(k, k));
+      $("filtrKat").add(new Option(k, k));
+    });
+    if (a) $("kategoriya").value = a;
+    if (b) $("filtrKat").value = b;
+  }
+  kategoriyaToldir();
+
+  $("yangiKat").onclick = function () {
+    let nom = (prompt("Yangi kategoriya nomi (masalan: 📚 O'qish)") || "").trim().slice(0, 30);
+    if (!nom) return;
+    if (/^[\p{L}\p{N}]/u.test(nom)) nom = "🏷️ " + nom; // emoji yozilmagan bo'lsa, belgi qo'shamiz
+    if (KATEGORIYALAR.indexOf(nom) < 0) KATEGORIYALAR.push(nom);
+    saqla();
+    kategoriyaToldir();
+    $("kategoriya").value = nom;
+  };
+
+  function formaTozala() {
+    $("forma").reset();
+    tahrirId = null;
+    $("sana").value = bugun();
+    $("sana").max = bugun(); // kelajak sanasi tanlanmaydi
+    $("miqdor").value = 1;
+    $("tugma").textContent = "Qo'shish";
+    $("bekor").hidden = true;
+  }
+
+  $("forma").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const nom = $("nom").value.trim();
+    const miqdor = Number($("miqdor").value);
+    const narx = Number($("narx").value);
+    if (!nom || !(miqdor > 0) || !(narx >= 0)) {
+      alert("Nom, miqdor va narxni to'g'ri kiriting.");
+      return;
+    }
+    if (($("sana").value || bugun()) > bugun()) {
+      alert("Kelajak sanasini kiritib bo'lmaydi.");
+      return;
+    }
+    const malumot = {
+      nom: nom, kategoriya: $("kategoriya").value, miqdor: miqdor, narx: narx,
+      izoh: $("izoh").value.trim(), sana: $("sana").value || bugun()
+    };
+    if (tahrirId) {
+      const eski = yozuvlar.find(function (y) { return y.id === tahrirId; });
+      Object.assign(eski, malumot);                       // mavjud yozuvni yangilaymiz
+    } else {
+      yozuvlar.push(Object.assign({ id: Date.now() }, malumot)); // yangi yozuv
+    }
+    oy = malumot.sana.slice(0, 7); // qo'shilgan yozuv oyini ko'rsatamiz
+    formaTozala();
+    saqla();
+    chiz();
+  });
+
+  $("bekor").onclick = formaTozala;
+
+  function tahrirla(y) {
+    tahrirId = y.id;
+    $("nom").value = y.nom;
+    $("kategoriya").value = y.kategoriya;
+    $("sana").value = y.sana;
+    $("miqdor").value = y.miqdor;
+    $("narx").value = y.narx;
+    $("izoh").value = y.izoh;
+    $("tugma").textContent = "O'zgarishni saqlash";
+    $("bekor").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    $("nom").focus();
+  }
+
+  let ochirilgan = null, toastVaqt = null;
+  function ochir(y) {
+    const joyi = yozuvlar.findIndex(function (q) { return q.id === y.id; });
+    if (joyi < 0) return;
+    ochirilgan = { y: y, joyi: joyi };       // qaytarish uchun eslab qolamiz
+    yozuvlar.splice(joyi, 1);
+    if (tahrirId === y.id) formaTozala();
+    saqla();
+    chiz();
+    $("toastMatn").textContent = "\"" + y.nom + "\" o'chirildi";
+    $("toast").hidden = false;
+    clearTimeout(toastVaqt);
+    toastVaqt = setTimeout(function () { $("toast").hidden = true; ochirilgan = null; }, 6000);
+  }
+  $("qaytar").onclick = function () {
+    if (!ochirilgan) return;
+    yozuvlar.splice(ochirilgan.joyi, 0, ochirilgan.y);
+    ochirilgan = null;
+    $("toast").hidden = true;
+    saqla();
+    chiz();
+  };
+
+  // ===== 6. OY TANLASH =====
+  function oyOzgar(d) {
+    const p = oy.split("-");
+    const sana = new Date(Number(p[0]), Number(p[1]) - 1 + d, 1);
+    oy = sana.getFullYear() + "-" + String(sana.getMonth() + 1).padStart(2, "0");
+    chiz();
+  }
+  $("oldingi").onclick = function () { oyOzgar(-1); };
+  $("keyingi").onclick = function () { oyOzgar(1); };
+
+  // ===== 7. CHIZISH =====
+  function chiz() {
+    const p = oy.split("-");
+    $("oyNomi").textContent = OYLAR[Number(p[1]) - 1] + " " + p[0];
+
+    const oydagi = yozuvlar.filter(function (y) { return y.sana.slice(0, 7) === oy; });
+    hisobotChiz(oydagi, Number(p[0]), Number(p[1]));
+    grafikChiz(oydagi);
+    royxatChiz(oydagi);
+    zaxiraEslatma();
+  }
+
+  // Jami, kunlik o'rtacha, eng katta xarajat
+  function hisobotChiz(oydagi, yil, oyRaqam) {
+    const jami = oydagi.reduce(function (s, y) { return s + summaOf(y); }, 0);
+    const buOy = oy === bugun().slice(0, 7);
+    const kunlar = buOy ? new Date().getDate() : new Date(yil, oyRaqam, 0).getDate(); // oyda nechta kun o'tgan
+
+    $("jami").textContent = pul(jami);
+    $("ortacha").textContent = pul(jami / kunlar);
+
+    let eng = null;
+    oydagi.forEach(function (y) { if (!eng || summaOf(y) > summaOf(eng)) eng = y; });
+    $("eng").textContent = eng ? eng.nom + ": " + pul(summaOf(eng)) : "—";
+  }
+
+  // Kategoriyalar bo'yicha chiziqli grafik
+  function grafikChiz(oydagi) {
+    const joy = $("grafik");
+    joy.innerHTML = "";
+    const yigindi = {};
+    let jami = 0;
+    oydagi.forEach(function (y) {
+      yigindi[y.kategoriya] = (yigindi[y.kategoriya] || 0) + summaOf(y);
+      jami += summaOf(y);
+    });
+    const tartib = Object.keys(yigindi).sort(function (a, b) { return yigindi[b] - yigindi[a]; });
+    if (!tartib.length) { joy.appendChild(el("div", "bosh", "Bu oyda xarajat yo'q.")); return; }
+
+    tartib.forEach(function (k) {
+      const foiz = jami ? Math.round(yigindi[k] / jami * 100) : 0;
+      const qator = el("div", "qator");
+      const ustki = el("div", "ustki");
+      ustki.appendChild(el("span", "", k));
+      ustki.appendChild(el("span", "", pul(yigindi[k]) + " · " + foiz + "%"));
+      const yol = el("div", "yol");
+      const chiziq = el("i");
+      chiziq.style.width = foiz + "%";
+      yol.appendChild(chiziq);
+      qator.appendChild(ustki);
+      qator.appendChild(yol);
+      joy.appendChild(qator);
+    });
+  }
+
+  // Yozuvlar ro'yxati: qidiruv va filtr bilan, kunlar bo'yicha guruhlangan
+  function royxatChiz(oydagi) {
+    const joy = $("royxat");
+    joy.innerHTML = "";
+    const soz = $("qidir").value.trim().toLowerCase();
+    const kat = $("filtrKat").value;
+
+    const korinadigan = oydagi.filter(function (y) {
+      const matn = (y.nom + " " + y.izoh).toLowerCase();
+      return (!soz || matn.indexOf(soz) >= 0) && (!kat || y.kategoriya === kat);
+    });
+    if (!korinadigan.length) {
+      joy.appendChild(el("div", "bosh", oydagi.length ? "Hech narsa topilmadi." : "Yozuv yo'q. Yuqoridagi forma orqali birinchisini qo'shing."));
+      return;
+    }
+
+    const kunlar = {};
+    korinadigan.forEach(function (y) {
+      if (!kunlar[y.sana]) kunlar[y.sana] = [];
+      kunlar[y.sana].push(y);
+    });
+
+    Object.keys(kunlar).sort().reverse().forEach(function (sana) {
+      const guruh = kunlar[sana].sort(function (a, b) { return b.id - a.id; });
+      const kunJami = guruh.reduce(function (s, y) { return s + summaOf(y); }, 0);
+
+      const p = sana.split("-");
+      const nomi = Number(p[2]) + "-" + OYLAR[Number(p[1]) - 1].toLowerCase() + (sana === bugun() ? " (bugun)" : "");
+      const sarlavha = el("h3");
+      sarlavha.appendChild(el("span", "", nomi));
+      sarlavha.appendChild(el("span", "", pul(kunJami)));
+      joy.appendChild(sarlavha);
+
+      guruh.forEach(function (y) {
+        const qator = el("div", "yozuv");
+        qator.appendChild(el("span", "em", y.kategoriya.split(" ")[0]));
+
+        const matn = el("div", "matn");
+        matn.appendChild(el("div", "nom", y.nom));
+        matn.appendChild(el("div", "tafsilot", y.miqdor + " × " + pul(y.narx) + (y.izoh ? " · " + y.izoh : "")));
+        qator.appendChild(matn);
+
+        qator.appendChild(el("span", "summa", pul(summaOf(y))));
+
+        const t = el("button", "ikon", "✎");
+        t.title = "Tahrirlash";
+        t.setAttribute("aria-label", "Tahrirlash");
+        t.onclick = function () { tahrirla(y); };
+        const o = el("button", "ikon ochir", "✕");
+        o.title = "O'chirish";
+        o.setAttribute("aria-label", "O'chirish");
+        o.onclick = function () { ochir(y); };
+        qator.appendChild(t);
+        qator.appendChild(o);
+        joy.appendChild(qator);
+      });
+    });
+  }
+
+  $("qidir").addEventListener("input", chiz);
+  $("filtrKat").addEventListener("change", chiz);
+
+  // ===== 8. ZAXIRA NUSXA VA TIKLASH =====
+  // 14 kundan beri zaxira olinmagan bo'lsa, eslatma chiqaradi
+  function zaxiraEslatma() {
+    let sana = null;
+    try { sana = localStorage.getItem("oxirgiZaxira"); } catch (e) {}
+    const kun = sana ? Math.floor((Date.now() - new Date(sana).getTime()) / 86400000) : null;
+    $("eslatma").hidden = !(yozuvlar.length > 0 && (kun === null || kun >= 14));
+    $("eslatmaMatn").textContent = kun === null ? "Hali zaxira nusxa olinmagan." : "Oxirgi zaxira " + kun + " kun oldin olingan.";
+  }
+  $("eslatmaTugma").onclick = function () { $("eksportTugma").click(); };
+
+  $("eksportTugma").onclick = function () {
+    const blob = new Blob([JSON.stringify(yozuvlar, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "xarajatlar-zaxira-" + bugun() + ".json";
+    a.click();
+    try { localStorage.setItem("oxirgiZaxira", bugun()); } catch (e) {}
+    zaxiraEslatma();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  };
+
+  $("importTugma").onclick = function () { $("fayl").click(); };
+
+  $("fayl").onchange = function () {
+    const fayl = this.files[0];
+    if (!fayl) return;
+    const oqigich = new FileReader();
+    oqigich.onload = function () {
+      try {
+        const xom = JSON.parse(oqigich.result);
+        if (!Array.isArray(xom)) throw new Error("noto'g'ri fayl");
+        const yangi = tozala(xom);
+        if (!yangi.length && xom.length) throw new Error("yozuvlar o'qilmadi");
+        if (confirm(yangi.length + " ta yozuv tiklansinmi? Hozirgilari almashtiriladi.")) {
+          yozuvlar = yangi;
+          saqla();
+          chiz();
+        }
+      } catch (xato) {
+        console.log(xato);
+        alert("Fayl o'qilmadi. To'g'ri zaxira faylini tanlang.");
+      }
+    };
+    oqigich.readAsText(fayl);
+    this.value = "";
+  };
+
+  // ===== 9. QORONG'I REJIM =====
+  function temaBelgisi() {
+    $("tema").textContent = document.documentElement.dataset.theme === "dark" ? "☀️" : "🌙";
+  }
+  $("tema").onclick = function () {
+    const yangi = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = yangi;
+    try { localStorage.setItem("tema", yangi); } catch (e) {}
+    temaBelgisi();
+  };
+
+  // ===== 10. BOSHLASH =====
+  formaTozala();
+  temaBelgisi();
+  chiz();
+
+  // Internetsiz ishlash (kompyuterdagi sinovda o'chiq)
+  if ("serviceWorker" in navigator && location.hostname !== "127.0.0.1" && location.hostname !== "localhost") {
+    navigator.serviceWorker.register("./sw.js").catch(function () {});
+  }
+</script>
 </body>
 </html>

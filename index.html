@@ -80,14 +80,6 @@ try {
   .bosh { text-align: center; color: var(--muted); padding: 24px 8px; }
   .zaxira { display: flex; gap: 8px; margin-top: 24px; }
   .zaxira .btn { font-size: 14px; padding: 10px; }
-  .katsatr { display: flex; gap: 6px; }
-  .katsatr select { flex: 1; min-width: 0; }
-  .katsatr .ikon { margin-top: 4px; padding: 0 14px; border: 1px solid var(--line); }
-  .eslatma { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--accent-soft); font-size: 14px; }
-  .eslatma .btn { width: auto; padding: 8px 12px; font-size: 14px; white-space: nowrap; }
-  #toast { position: fixed; left: 16px; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); max-width: 488px; margin: 0 auto; z-index: 10;
-    display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--text); color: var(--bg); }
-  #toast button { background: none; border: 0; font-weight: 700; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -98,16 +90,11 @@ try {
     <button class="ikon" id="tema" title="Rejimni almashtirish" aria-label="Rejimni almashtirish"></button>
   </div>
 
-  <div class="card eslatma" id="eslatma" hidden>
-    <span id="eslatmaMatn"></span>
-    <button class="btn" type="button" id="eslatmaTugma">Zaxira olish</button>
-  </div>
-
   <!-- ===== FORMA ===== -->
   <div class="card">
     <form id="forma" class="grid">
       <div class="full"><label for="nom">Nima uchun?</label><input id="nom" placeholder="Masalan: non" required></div>
-      <div><label for="kategoriya">Kategoriya</label><div class="katsatr"><select id="kategoriya"></select><button type="button" class="ikon" id="yangiKat" title="Yangi kategoriya" aria-label="Yangi kategoriya">+</button></div></div>
+      <div><label for="kategoriya">Kategoriya</label><select id="kategoriya"></select></div>
       <div><label for="sana">Sana</label><input type="date" id="sana"></div>
       <div><label for="miqdor">Miqdori</label><input type="number" id="miqdor" min="0.01" step="any" value="1" inputmode="decimal" required></div>
       <div><label for="narx">Narxi (1 dona)</label><input type="number" id="narx" min="0" step="any" inputmode="decimal" required></div>
@@ -147,18 +134,10 @@ try {
   </div>
 </div>
 
-<div id="toast" hidden><span id="toastMatn"></span><button type="button" id="qaytar">Qaytarish</button></div>
-
 <script>
   // ===== 1. SOZLAMALAR =====
   const KALIT = "xarajatlar"; // localStorage'dagi daftar nomi. O'ZGARTIRMA, aks holda eski yozuvlar ko'rinmay qoladi
-  const STANDART = ["🍞 Oziq-ovqat", "🚌 Transport", "🏠 Uy-ro'zg'or", "👕 Kiyim", "💊 Salomatlik", "🎮 Ko'ngilochar", "📦 Boshqa"];
-  let KATEGORIYALAR = STANDART.slice(); // standart + o'zing qo'shganlar
-  try {
-    JSON.parse(localStorage.getItem("kategoriyalar") || "[]").forEach(function (k) {
-      if (typeof k === "string" && KATEGORIYALAR.indexOf(k) < 0) KATEGORIYALAR.push(k);
-    });
-  } catch (e) {}
+  const KATEGORIYALAR = ["🍞 Oziq-ovqat", "🚌 Transport", "🏠 Uy-ro'zg'or", "👕 Kiyim", "💊 Salomatlik", "🎮 Ko'ngilochar", "📦 Boshqa"];
   const OYLAR = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
   // ===== 2. YORDAMCHI FUNKSIYALAR =====
@@ -178,22 +157,13 @@ try {
   // ===== 3. MA'LUMOT: yuklash, tekshirish, saqlash =====
   // Har yozuvni tekshiradi va eski yozuvlarga yetishmagan maydonlarni qo'shadi
   function tozala(royxat) {
-    const ishlatilgan = {};
     return royxat
-      .filter(function (y) {
-        return y && typeof y.nom === "string" && y.narx !== null && y.narx !== "" &&
-               Number(y.miqdor) > 0 && Number(y.narx) >= 0; // miqdor > 0, narx >= 0
-      })
+      .filter(function (y) { return y && typeof y.nom === "string" && isFinite(y.miqdor) && isFinite(y.narx); })
       .map(function (y, i) {
-        let id = y.id || Date.now() + i;
-        while (ishlatilgan[id]) id++;              // id takrorlansa, yangisini beramiz
-        ishlatilgan[id] = true;
-        const kat = typeof y.kategoriya === "string" && y.kategoriya.trim() ? y.kategoriya.trim() : "📦 Boshqa";
-        if (KATEGORIYALAR.indexOf(kat) < 0) KATEGORIYALAR.push(kat);
         return {
-          id: id,
+          id: y.id || Date.now() + i,
           nom: y.nom.trim() || "Nomsiz",
-          kategoriya: kat,
+          kategoriya: KATEGORIYALAR.indexOf(y.kategoriya) >= 0 ? y.kategoriya : "📦 Boshqa",
           miqdor: Number(y.miqdor),
           narx: Number(y.narx),
           izoh: y.izoh || "",
@@ -214,7 +184,6 @@ try {
   function saqla() {
     try {
       localStorage.setItem(KALIT, JSON.stringify(yozuvlar));
-      localStorage.setItem("kategoriyalar", JSON.stringify(KATEGORIYALAR.filter(function (k) { return STANDART.indexOf(k) < 0; })));
     } catch (xato) {
       alert("Saqlab bo'lmadi. Brauzer xotirasi to'lgan bo'lishi mumkin. Zaxira nusxa oling.");
     }
@@ -225,34 +194,15 @@ try {
   let tahrirId = null;          // tahrirlanayotgan yozuv raqami (yo'q bo'lsa null)
 
   // ===== 5. FORMA =====
-  function kategoriyaToldir() {
-    const a = $("kategoriya").value, b = $("filtrKat").value;
-    $("kategoriya").length = 0;
-    $("filtrKat").length = 1; // "Hammasi" qoladi
-    KATEGORIYALAR.forEach(function (k) {
-      $("kategoriya").add(new Option(k, k));
-      $("filtrKat").add(new Option(k, k));
-    });
-    if (a) $("kategoriya").value = a;
-    if (b) $("filtrKat").value = b;
-  }
-  kategoriyaToldir();
-
-  $("yangiKat").onclick = function () {
-    let nom = (prompt("Yangi kategoriya nomi (masalan: 📚 O'qish)") || "").trim().slice(0, 30);
-    if (!nom) return;
-    if (/^[\p{L}\p{N}]/u.test(nom)) nom = "🏷️ " + nom; // emoji yozilmagan bo'lsa, belgi qo'shamiz
-    if (KATEGORIYALAR.indexOf(nom) < 0) KATEGORIYALAR.push(nom);
-    saqla();
-    kategoriyaToldir();
-    $("kategoriya").value = nom;
-  };
+  KATEGORIYALAR.forEach(function (k) {
+    $("kategoriya").add(new Option(k, k));
+    $("filtrKat").add(new Option(k, k));
+  });
 
   function formaTozala() {
     $("forma").reset();
     tahrirId = null;
     $("sana").value = bugun();
-    $("sana").max = bugun(); // kelajak sanasi tanlanmaydi
     $("miqdor").value = 1;
     $("tugma").textContent = "Qo'shish";
     $("bekor").hidden = true;
@@ -265,10 +215,6 @@ try {
     const narx = Number($("narx").value);
     if (!nom || !(miqdor > 0) || !(narx >= 0)) {
       alert("Nom, miqdor va narxni to'g'ri kiriting.");
-      return;
-    }
-    if (($("sana").value || bugun()) > bugun()) {
-      alert("Kelajak sanasini kiritib bo'lmaydi.");
       return;
     }
     const malumot = {
@@ -303,28 +249,13 @@ try {
     $("nom").focus();
   }
 
-  let ochirilgan = null, toastVaqt = null;
   function ochir(y) {
-    const joyi = yozuvlar.findIndex(function (q) { return q.id === y.id; });
-    if (joyi < 0) return;
-    ochirilgan = { y: y, joyi: joyi };       // qaytarish uchun eslab qolamiz
-    yozuvlar.splice(joyi, 1);
+    if (!confirm("\"" + y.nom + "\" o'chirilsinmi?")) return;
+    yozuvlar = yozuvlar.filter(function (q) { return q.id !== y.id; });
     if (tahrirId === y.id) formaTozala();
     saqla();
     chiz();
-    $("toastMatn").textContent = "\"" + y.nom + "\" o'chirildi";
-    $("toast").hidden = false;
-    clearTimeout(toastVaqt);
-    toastVaqt = setTimeout(function () { $("toast").hidden = true; ochirilgan = null; }, 6000);
   }
-  $("qaytar").onclick = function () {
-    if (!ochirilgan) return;
-    yozuvlar.splice(ochirilgan.joyi, 0, ochirilgan.y);
-    ochirilgan = null;
-    $("toast").hidden = true;
-    saqla();
-    chiz();
-  };
 
   // ===== 6. OY TANLASH =====
   function oyOzgar(d) {
@@ -345,7 +276,6 @@ try {
     hisobotChiz(oydagi, Number(p[0]), Number(p[1]));
     grafikChiz(oydagi);
     royxatChiz(oydagi);
-    zaxiraEslatma();
   }
 
   // Jami, kunlik o'rtacha, eng katta xarajat
@@ -454,24 +384,12 @@ try {
   $("filtrKat").addEventListener("change", chiz);
 
   // ===== 8. ZAXIRA NUSXA VA TIKLASH =====
-  // 14 kundan beri zaxira olinmagan bo'lsa, eslatma chiqaradi
-  function zaxiraEslatma() {
-    let sana = null;
-    try { sana = localStorage.getItem("oxirgiZaxira"); } catch (e) {}
-    const kun = sana ? Math.floor((Date.now() - new Date(sana).getTime()) / 86400000) : null;
-    $("eslatma").hidden = !(yozuvlar.length > 0 && (kun === null || kun >= 14));
-    $("eslatmaMatn").textContent = kun === null ? "Hali zaxira nusxa olinmagan." : "Oxirgi zaxira " + kun + " kun oldin olingan.";
-  }
-  $("eslatmaTugma").onclick = function () { $("eksportTugma").click(); };
-
   $("eksportTugma").onclick = function () {
     const blob = new Blob([JSON.stringify(yozuvlar, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "xarajatlar-zaxira-" + bugun() + ".json";
     a.click();
-    try { localStorage.setItem("oxirgiZaxira", bugun()); } catch (e) {}
-    zaxiraEslatma();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   };
 

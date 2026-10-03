@@ -1,6 +1,6 @@
 // Bu o'zimizning ilova uchun. Kesh nomi eskisidan boshqa ("oz-"),
 // shuning uchun eski ilovaning keshiga tegmaydi.
-const KESH = "oz-v1";
+const KESH = "oz-v2";
 const FAYLLAR = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function (e) {

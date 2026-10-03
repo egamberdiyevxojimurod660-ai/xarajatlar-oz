@@ -7,6 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#2f6fed">
+    
 </head>
 <style>
     body {
@@ -75,6 +76,28 @@ li button {
   cursor: pointer;
   padding: 8px 12px;
 }
+h3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: #6b7280;
+  margin: 20px 0 8px;
+}
+.zaxira {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+.zaxira button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  background: white;
+  color: #1f2430;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
   </style>
 <body>
@@ -88,11 +111,19 @@ li button {
     <input type="number" id="miqdor" min="1" required>
     <label for="narx">Narxi:</label>
     <input type="number" id="narx" min="0" required>
+    <label for="izoh">Izoh:</label>
+    <input id="izoh" placeholder="Masalan: bozordan oldim">
 
     <button type="submit">Qo'shish</button>
   </form>
   <p id="jami"></p>
   <ul id="royxat"></ul>
+
+  <div class="zaxira">
+    <button type="button" id="eksportTugma">⬇ Zaxira nusxa</button>
+    <button type="button" id="importTugma">⬆ Tiklash</button>
+    <input type="file" id="fayl" accept=".json" hidden>
+  </div>
   <script>
     // Daftar: saqlangan bo'lsa olib keladi, bo'lmasa bo'sh
     let yozuvlar = JSON.parse(localStorage.getItem("xarajatlar")) || [];
@@ -109,8 +140,10 @@ li button {
       const yozuv = {
         nom: document.getElementById("nom").value,
         miqdor: Number(document.getElementById("miqdor").value),
-        narx: Number(document.getElementById("narx").value)
-      };
+        narx: Number(document.getElementById("narx").value),
+        izoh: document.getElementById("izoh").value, // yangi
+        sana: new Date().toLocaleDateString("sv-SE"),
+     };
   
       yozuvlar.push(yozuv); // 2. Daftarga qo'shamiz
       saqla();              // 3. Brauzer xotirasiga saqlaymiz
@@ -125,32 +158,97 @@ li button {
   
     // Daftardagi hamma yozuvni ekranga chiqaradi
     function chiz() {
-      royxat.innerHTML = "";
-      let jami = 0; // yig'indi hisoblagich, 0 dan boshlanadi
-  
-      yozuvlar.forEach(function (y, i) {
-        const summa = y.miqdor * y.narx;
-        jami = jami + summa; // har yozuvning summasini qo'shib boramiz
-  
-        const li = document.createElement("li");
-        li.textContent = y.nom + ": " + y.miqdor + " × " + y.narx + " = " + summa + " so'm ";
-  
-        // O'chirish tugmasi
-        const tugma = document.createElement("button");
-        tugma.textContent = "✕";
-        tugma.onclick = function () {
-          yozuvlar.splice(i, 1); // daftardan i-chi qatorni olib tashlaydi
-          saqla();
-          chiz();
-        };
-  
-        li.appendChild(tugma);
-        royxat.appendChild(li);
-      });
-  
-      document.getElementById("jami").textContent = "Jami: " + jami + " so'm";
+  royxat.innerHTML = "";
+  let jami = 0;
+
+  // 1. Yozuvlarni kunlar bo'yicha qutilarga ajratamiz
+  const kunlar = {};
+  yozuvlar.forEach(function (y, i) {
+    const kalit = y.sana || "0-eski"; // sanasi yo'q eski yozuvlar uchun
+    if (!kunlar[kalit]) kunlar[kalit] = []; // quti yo'q bo'lsa, ochamiz
+    kunlar[kalit].push({ y: y, i: i });     // i: o'chirish uchun raqamini ham eslab qolamiz
+    jami = jami + y.miqdor * y.narx;
+  });
+
+  // 2. Sanalarni yangisidan eskisiga qarab chiqamiz
+  Object.keys(kunlar).sort().reverse().forEach(function (kalit) {
+    const guruh = kunlar[kalit];
+
+    // Shu kunning jami
+    let kunJami = 0;
+    guruh.forEach(function (g) {
+      kunJami = kunJami + g.y.miqdor * g.y.narx;
+    });
+
+    // Kun sarlavhasi
+    const sarlavha = document.createElement("h3");
+    const nomi = kalit === "0-eski" ? "Eski yozuvlar" : kalit;
+    sarlavha.innerHTML = "<span>" + nomi + "</span><span>" + kunJami + " so'm</span>";
+    royxat.appendChild(sarlavha);
+
+    // Shu kunning yozuvlari
+    guruh.forEach(function (g) {
+      const y = g.y;
+      const summa = y.miqdor * y.narx;
+
+      const li = document.createElement("li");
+      li.textContent = y.nom + ": " + y.miqdor + " × " + y.narx + " = " + summa + " so'm" +
+        (y.izoh ? " (" + y.izoh + ")" : "") + " ";
+
+      const tugma = document.createElement("button");
+      tugma.textContent = "✕";
+      tugma.onclick = function () {
+        yozuvlar.splice(g.i, 1);
+        saqla();
+        chiz();
+      };
+
+      li.appendChild(tugma);
+      royxat.appendChild(li);
+    });
+  });
+
+  document.getElementById("jami").textContent = "Jami: " + jami + " so'm";
+}
+  // ZAXIRA NUSXA: yozuvlarni fayl qilib yuklab beradi
+document.getElementById("eksportTugma").onclick = function () {
+  const matn = JSON.stringify(yozuvlar, null, 2);
+  const blob = new Blob([matn], { type: "application/json" });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "xarajatlar-zaxira-" + new Date().toLocaleDateString("sv-SE") + ".json";
+  a.click();
+};
+
+// TIKLASH: "Tiklash" tugmasi yashirin fayl maydonini bosadi
+document.getElementById("importTugma").onclick = function () {
+  document.getElementById("fayl").click();
+};
+
+// Fayl tanlanganda uni o'qiymiz
+document.getElementById("fayl").onchange = function () {
+  const fayl = this.files[0];
+  if (!fayl) return;
+
+  const oqigich = new FileReader();
+  oqigich.onload = function () {
+    try {
+      const yangi = JSON.parse(oqigich.result);
+      if (!Array.isArray(yangi)) throw new Error("noto'g'ri fayl");
+
+      if (confirm(yangi.length + " ta yozuv tiklansinmi? Hozirgilari almashtiriladi.")) {
+        yozuvlar = yangi;
+        saqla();
+        chiz();
+      }
+    } catch (xato) {
+      alert("Fayl o'qilmadi. To'g'ri zaxira faylini tanlang.");
     }
-  
+  };
+  oqigich.readAsText(fayl);
+  this.value = ""; // bir faylni ketma-ket ikki marta tanlash mumkin bo'lishi uchun
+};
     // Sahifa ochilishi bilan saqlangan yozuvlarni ko'rsatadi
     chiz();
     if ("serviceWorker" in navigator && location.hostname !== "127.0.0.1") {

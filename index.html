@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xarajatlarim</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#2f6fed">
+</head>
+<style>
+    body {
+      font-family: sans-serif;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px;
+      background: #f5f6fa;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    form button {
+      padding: 12px;
+      font-size: 16px;
+      background: #f01e1e;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+    }
+    h1 {
+        text-align: center;
+    }
+        /* Jami summa */
+#jami {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 20px 0 8px;
+}
+
+/* Ro'yxatning nuqtalarini olib tashlaymiz */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Har bir yozuv: oq karta */
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+li:hover { background: #e8e9ed; }
+
+/* O'chirish tugmasi */
+li button {
+  background: none;
+  border: 0;
+  color: #e5484d;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px;
+}
+
+  </style>
+<body>
+    
+  <h1>Xarajatlarim</h1>
+
+  <form>
+    <label for="nom">Nima uchun?</label>
+    <input id="nom" placeholder="Masalan: non" required>
+    <label for="miqdor">Miqdori:</label>
+    <input type="number" id="miqdor" min="1" required>
+    <label for="narx">Narxi:</label>
+    <input type="number" id="narx" min="0" required>
+
+    <button type="submit">Qo'shish</button>
+  </form>
+  <p id="jami"></p>
+  <ul id="royxat"></ul>
+  <script>
+    // Daftar: saqlangan bo'lsa olib keladi, bo'lmasa bo'sh
+    let yozuvlar = JSON.parse(localStorage.getItem("xarajatlar")) || [];
+  
+    // Sahifadagi forma va ro'yxatni topib olamiz
+    const forma = document.querySelector("form");
+    const royxat = document.getElementById("royxat");
+  
+    // "Qo'shish" bosilganda shu ishlar bajariladi
+    forma.addEventListener("submit", function (e) {
+      e.preventDefault(); // sahifa yangilanib ketmasin
+  
+      // 1. Maydonlardagi yozuvni o'qib, bitta yozuv qilamiz
+      const yozuv = {
+        nom: document.getElementById("nom").value,
+        miqdor: Number(document.getElementById("miqdor").value),
+        narx: Number(document.getElementById("narx").value)
+      };
+  
+      yozuvlar.push(yozuv); // 2. Daftarga qo'shamiz
+      saqla();              // 3. Brauzer xotirasiga saqlaymiz
+      chiz();               // 4. Ekranda ko'rsatamiz
+      forma.reset();        // 5. Maydonlarni tozalaymiz
+    });
+  
+    // Daftarni brauzer xotirasiga saqlaydi
+    function saqla() {
+      localStorage.setItem("xarajatlar", JSON.stringify(yozuvlar));
+    }
+  
+    // Daftardagi hamma yozuvni ekranga chiqaradi
+    function chiz() {
+      royxat.innerHTML = "";
+      let jami = 0; // yig'indi hisoblagich, 0 dan boshlanadi
+  
+      yozuvlar.forEach(function (y, i) {
+        const summa = y.miqdor * y.narx;
+        jami = jami + summa; // har yozuvning summasini qo'shib boramiz
+  
+        const li = document.createElement("li");
+        li.textContent = y.nom + ": " + y.miqdor + " × " + y.narx + " = " + summa + " so'm ";
+  
+        // O'chirish tugmasi
+        const tugma = document.createElement("button");
+        tugma.textContent = "✕";
+        tugma.onclick = function () {
+          yozuvlar.splice(i, 1); // daftardan i-chi qatorni olib tashlaydi
+          saqla();
+          chiz();
+        };
+  
+        li.appendChild(tugma);
+        royxat.appendChild(li);
+      });
+  
+      document.getElementById("jami").textContent = "Jami: " + jami + " so'm";
+    }
+  
+    // Sahifa ochilishi bilan saqlangan yozuvlarni ko'rsatadi
+    chiz();
+    if ("serviceWorker" in navigator && location.hostname !== "127.0.0.1") {
+  navigator.serviceWorker.register("./sw.js");
+}
+  </script>
+
+</body>
+</html>

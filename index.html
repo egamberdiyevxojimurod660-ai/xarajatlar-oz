@@ -6,7 +6,7 @@
 <title>Xarajatlarim</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#2f6fed">
+<meta name="theme-color" content="#0f766e">
 <!-- Rejimni sahifa chizilishidan OLDIN o'rnatamiz (miltillamasligi uchun) -->
 <script>
 try {
@@ -31,7 +31,7 @@ try {
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(env(safe-area-inset-bottom, 0px) + 90px);
   }
   .wrap { max-width: 520px; margin: 0 auto; }
   .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -47,14 +47,23 @@ try {
     width: 100%; margin-top: 4px; padding: 10px; font-size: 16px;
     border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text);
   }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* iPhone Safari sana maydonini o'zicha kengaytiradi va o'rtaga suradi: shuni tuzatamiz */
+  input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; text-align: left; }
+  input::-webkit-date-and-time-value { text-align: left; }
+  input, select { min-height: 44px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .grid > div { min-width: 0; } /* maydon ustunidan chiqib ketmasin */
   .full { grid-column: 1 / -1; }
   .btn { width: 100%; padding: 12px; font-size: 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; }
   .btn.ikkinchi { background: transparent; color: var(--text); border: 1px solid var(--line); }
-  .ikon { background: none; border: 0; padding: 8px 10px; font-size: 18px; border-radius: 8px; color: var(--muted); }
+  .ikon { min-width: 40px; min-height: 40px; background: none; border: 0; padding: 8px 10px; font-size: 18px; border-radius: 8px; color: var(--muted); }
   .ikon:hover { background: var(--accent-soft); }
 
   /* ===== 3. OY VA HISOBOT ===== */
+  .rejimlar { display: flex; gap: 4px; padding: 3px; margin-bottom: 8px; background: var(--accent-soft); border-radius: 10px; }
+  .rejimlar button { flex: 1; padding: 8px; border: 0; border-radius: 8px; background: none; color: var(--muted); }
+  .rejimlar button.faol { background: var(--card); color: var(--text); font-weight: 600; }
+  .ikon:disabled { opacity: .25; cursor: default; }
   .oy { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
   .jami b { display: block; font-size: 30px; margin-top: 2px; }
   .stat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
@@ -67,7 +76,7 @@ try {
   .yol i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
 
   /* ===== 4. RO'YXAT ===== */
-  .filtr { display: grid; grid-template-columns: 3fr 2fr; gap: 8px; }
+  .filtr { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 8px; }
   .filtr input, .filtr select { margin: 0; }
   h3 { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin: 18px 4px 8px; }
   .yozuv { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 6px 10px 12px; margin-bottom: 6px; }
@@ -80,6 +89,49 @@ try {
   .bosh { text-align: center; color: var(--muted); padding: 24px 8px; }
   .zaxira { display: flex; gap: 8px; margin-top: 24px; }
   .zaxira .btn { font-size: 14px; padding: 10px; }
+  .eslatma { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--accent-soft); font-size: 14px; }
+  .eslatma .btn { width: auto; padding: 8px 12px; font-size: 14px; white-space: nowrap; }
+  #toast { position: fixed; left: 16px; right: 16px; top: max(12px, env(safe-area-inset-top)); max-width: 488px; margin: 0 auto; z-index: 30;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--text); color: var(--bg); }
+  #toast button { background: none; border: 0; font-weight: 700; text-decoration: underline; }
+
+  /* ===== 5. "+" TUGMASI VA YANGI XARAJAT OYNASI ===== */
+  .fab { position: fixed; right: max(18px, calc((100vw - 520px) / 2 + 18px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 32px; line-height: 1;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .28); z-index: 5; }
+  .varaq { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+  .orqa { position: absolute; inset: 0; background: rgba(0, 0, 0, .45); }
+  .panel { position: relative; width: 100%; max-width: 520px; max-height: 94%; overflow-y: auto; background: var(--card);
+    border-radius: 18px 18px 0 0; padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+  .varaq-bosh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .varaq-bosh h2 { margin: 0; font-size: 17px; }
+  body.ochiq { overflow: hidden; }
+
+  /* ===== 6. LIMIT, KUNLAR GRAFIGI, SOZLAMALAR ===== */
+  .top-tugma { display: flex; gap: 2px; }
+  .limit-bosh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .limit-bosh b { font-size: 15px; }
+  .yol i.ogoh { background: #d98a00; }
+  .yol i.oshdi { background: var(--danger); }
+  .kunlar { display: flex; align-items: flex-end; gap: 2px; height: 90px; }
+  .ustun { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; padding: 0; border: 0; background: none; }
+  .ustun i { display: block; width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; }
+  .ustun.bosh i { background: var(--line); }
+  .ustun.bugun i { box-shadow: 0 0 0 2px var(--text); }
+  .ustun:disabled { opacity: .35; cursor: default; }
+  .kunlar-yozuv { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .soz-bolim { margin: 18px 0 8px; font-size: 14px; color: var(--muted); }
+  .versiya { text-align: center; font-size: 12px; color: var(--muted); margin: 16px 0 0; }
+  #sozlama .zaxira { margin-top: 0; }
+
+  /* ===== 7. KATEGORIYALAR, TAKRORLANUVCHI XARAJATLAR ===== */
+  .sat { display: flex; align-items: center; gap: 4px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .sat span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 15px; }
+  .sat .ikon { min-width: 36px; min-height: 36px; padding: 4px 8px; }
+  .qosh-qator { display: flex; gap: 8px; margin-top: 8px; }
+  .qosh-qator input { margin: 0; flex: 1; min-width: 0; }
+  .qosh-qator .btn { width: auto; padding: 0 18px; }
+  .bosh-kichik { color: var(--muted); font-size: 14px; padding: 6px 0; }
 </style>
 </head>
 <body>
@@ -87,57 +139,146 @@ try {
 
   <div class="top">
     <h1>Xarajatlarim</h1>
-    <button class="ikon" id="tema" title="Rejimni almashtirish" aria-label="Rejimni almashtirish"></button>
+    <div class="top-tugma">
+      <button class="ikon" id="sozTugma" title="Sozlamalar" aria-label="Sozlamalar">⚙️</button>
+      <button class="ikon" id="tema" title="Rejimni almashtirish" aria-label="Rejimni almashtirish"></button>
+    </div>
   </div>
 
-  <!-- ===== FORMA ===== -->
-  <div class="card">
-    <form id="forma" class="grid">
-      <div class="full"><label for="nom">Nima uchun?</label><input id="nom" placeholder="Masalan: non" required></div>
-      <div><label for="kategoriya">Kategoriya</label><select id="kategoriya"></select></div>
-      <div><label for="sana">Sana</label><input type="date" id="sana"></div>
-      <div><label for="miqdor">Miqdori</label><input type="number" id="miqdor" min="0.01" step="any" value="1" inputmode="decimal" required></div>
-      <div><label for="narx">Narxi (1 dona)</label><input type="number" id="narx" min="0" step="any" inputmode="decimal" required></div>
-      <div class="full"><label for="izoh">Izoh (ixtiyoriy)</label><input id="izoh" placeholder="Masalan: bozordan oldim"></div>
-      <button class="btn full" id="tugma" type="submit">Qo'shish</button>
-      <button class="btn ikkinchi full" id="bekor" type="button" hidden>Bekor qilish</button>
-    </form>
+  <div class="card eslatma" id="eslatma" hidden>
+    <span id="eslatmaMatn"></span>
+    <button class="btn" type="button" id="eslatmaTugma">Zaxira olish</button>
   </div>
 
   <!-- ===== OY HISOBOTI ===== -->
+  <div class="rejimlar">
+    <button type="button" id="rejimKun">Kun</button>
+    <button type="button" id="rejimOy">Oy</button>
+  </div>
   <div class="oy">
     <button class="ikon" id="oldingi" aria-label="Oldingi oy">◀</button>
     <span id="oyNomi"></span>
     <button class="ikon" id="keyingi" aria-label="Keyingi oy">▶</button>
   </div>
   <div class="card">
-    <div class="jami"><small>Shu oyda jami</small><b id="jami"></b></div>
+    <div class="jami"><small id="jamiNom">Shu oyda jami</small><b id="jami"></b></div>
     <div class="stat">
-      <div><small>Kunlik o'rtacha</small><b id="ortacha"></b></div>
+      <div><small id="ortachaNom">Kunlik o'rtacha</small><b id="ortacha"></b></div>
       <div><small>Eng katta xarajat</small><b id="eng"></b></div>
     </div>
   </div>
-  <div class="card"><h2>Pul qayerga ketdi?</h2><div id="grafik"></div></div>
+  <div class="card eslatma" id="yangilanish" hidden>
+    <span>Ilovaning yangi versiyasi tayyor.</span>
+    <button class="btn" type="button" id="yangilashTugma">Yangilash</button>
+  </div>
+  <div class="card" id="limitKarta" hidden>
+    <div class="limit-bosh"><small id="limitNom"></small><b id="limitFoiz"></b></div>
+    <div class="yol"><i id="limitChiziq"></i></div>
+    <small id="limitQoldi"></small>
+  </div>
+  <div class="card" id="grafikKarta"><h2>Pul qayerga ketdi?</h2><div id="grafik"></div></div>
+
+  <div class="card" id="kunlarKarta">
+    <h2>Kunlar bo'yicha</h2>
+    <div class="kunlar" id="kunlar"></div>
+    <div class="kunlar-yozuv"><span>1</span><span id="kunOxiri"></span></div>
+  </div>
 
   <!-- ===== QIDIRUV VA RO'YXAT ===== -->
-  <div class="card filtr">
+  <div class="card filtr" id="filtrKarta">
     <input id="qidir" type="search" placeholder="Qidirish" aria-label="Qidirish">
     <select id="filtrKat" aria-label="Kategoriya bo'yicha"><option value="">Hammasi</option></select>
   </div>
   <div id="royxat"></div>
 
-  <!-- ===== ZAXIRA ===== -->
-  <div class="zaxira">
-    <button class="btn ikkinchi" type="button" id="eksportTugma">Zaxira nusxa</button>
-    <button class="btn ikkinchi" type="button" id="importTugma">Tiklash</button>
-    <input type="file" id="fayl" accept=".json" hidden>
+</div>
+
+<button class="fab" type="button" id="fab" aria-label="Xarajat qo'shish">+</button>
+
+<!-- ===== YANGI XARAJAT OYNASI ===== -->
+<div class="varaq" id="varaq" hidden role="dialog" aria-modal="true" aria-labelledby="varaqSarlavha">
+  <div class="orqa" id="orqa"></div>
+  <div class="panel">
+    <div class="varaq-bosh">
+      <h2 id="varaqSarlavha">Yangi xarajat</h2>
+      <button type="button" class="ikon" id="yop" aria-label="Yopish">✕</button>
+    </div>
+    <form id="forma" class="grid">
+      <div class="full"><label for="nom">Nima uchun?</label><input id="nom" placeholder="Masalan: non" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" required></div>
+      <div class="full"><label for="kategoriya">Kategoriya</label><select id="kategoriya"></select></div>
+      <div><label for="miqdor">Miqdori</label><input type="number" id="miqdor" min="0.01" step="any" value="1" inputmode="decimal" required></div>
+      <div><label for="narx">Narxi (1 dona)</label><input type="number" id="narx" min="0" step="any" inputmode="decimal" enterkeyhint="done" required></div>
+      <div><label for="sana">Xarajat sanasi</label><input type="date" id="sana"></div>
+      <div><label for="izoh">Izoh (ixtiyoriy)</label><input id="izoh" placeholder="Masalan: bozordan" autocomplete="off"></div>
+      <button class="btn full" id="tugma" type="submit">Qo'shish</button>
+    </form>
   </div>
 </div>
+
+<!-- ===== SOZLAMALAR ===== -->
+<div class="varaq" id="sozlama" hidden role="dialog" aria-modal="true" aria-labelledby="sozSarlavha">
+  <div class="orqa" id="sozOrqa"></div>
+  <div class="panel">
+    <div class="varaq-bosh">
+      <h2 id="sozSarlavha">Sozlamalar</h2>
+      <button type="button" class="ikon" id="sozYop" aria-label="Yopish va saqlash">✕</button>
+    </div>
+    <label for="limitKirish">Oylik limit (so'm)</label>
+    <input type="number" id="limitKirish" min="0" step="any" inputmode="decimal" placeholder="Masalan: 3000000">
+    <small>Bo'sh qoldirsangiz, limit o'chiq. Oyna yopilganda saqlanadi.</small>
+    <div class="soz-bolim">Kategoriyalar</div>
+    <div id="katRoyxat"></div>
+    <div class="qosh-qator">
+      <input id="katYangi" maxlength="24" placeholder="Masalan: 📚 O'qish" autocomplete="off" aria-label="Yangi kategoriya nomi">
+      <button class="btn" type="button" id="katQosh">Qo'shish</button>
+    </div>
+
+    <div class="soz-bolim">Takrorlanuvchi xarajatlar (har oy o'zi qo'shiladi)</div>
+    <div id="takrorRoyxat"></div>
+    <div class="grid" style="margin-top:8px">
+      <input class="full" id="takrorNom" maxlength="60" placeholder="Nomi (masalan: Ijara)" autocomplete="off" aria-label="Takrorlanuvchi xarajat nomi">
+      <input id="takrorNarx" type="number" min="0" step="any" inputmode="decimal" placeholder="Summa" aria-label="Summa">
+      <input id="takrorKun" type="number" min="1" max="28" step="1" inputmode="numeric" placeholder="Oyning kuni (1-28)" aria-label="Oyning qaysi kuni">
+      <select class="full" id="takrorKat" aria-label="Kategoriya"></select>
+      <button class="btn ikkinchi full" type="button" id="takrorQosh">Takrorlanuvchi qo'shish</button>
+    </div>
+
+    <div class="soz-bolim">Ma'lumotlar</div>
+    <div class="zaxira">
+      <button class="btn ikkinchi" type="button" id="eksportTugma">Zaxira nusxa</button>
+      <button class="btn ikkinchi" type="button" id="importTugma">Tiklash</button>
+      <input type="file" id="fayl" accept=".json" hidden>
+    </div>
+    <button class="btn ikkinchi" type="button" id="csvTugma" style="margin-top:8px;font-size:14px;padding:10px">Excel (CSV) ga yuklab olish</button>
+    <p class="versiya" id="versiya"></p>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite" hidden><span id="toastMatn"></span><button type="button" id="qaytar">Qaytarish</button></div>
 
 <script>
   // ===== 1. SOZLAMALAR =====
   const KALIT = "xarajatlar"; // localStorage'dagi daftar nomi. O'ZGARTIRMA, aks holda eski yozuvlar ko'rinmay qoladi
-  const KATEGORIYALAR = ["🍞 Oziq-ovqat", "🚌 Transport", "🏠 Uy-ro'zg'or", "👕 Kiyim", "💊 Salomatlik", "🎮 Ko'ngilochar", "📦 Boshqa"];
+  const VERSIYA = "3.0.0"; // har yangi versiyada o'zgartiriladi: ochiq ilova shu orqali yangilanish borligini biladi
+  const BOSHQA = "📦 Boshqa"; // o'chirib bo'lmaydigan kategoriya: boshqalari o'chirilsa, yozuvlar shunga o'tadi
+  const STANDART = ["🍞 Oziq-ovqat", "🚌 Transport", "🏠 Uy-ro'zg'or", "👕 Kiyim", "💊 Salomatlik", "🎮 Ko'ngilochar", BOSHQA];
+
+  // Kategoriyalar ro'yxatini tekshiradi: takrorsiz, 30 belgigacha, ko'pi bilan 20 ta, "Boshqa" doim bor
+  function kategoriyaTozala(royxat) {
+    const t = [];
+    (Array.isArray(royxat) ? royxat : []).forEach(function (k) {
+      if (typeof k !== "string") return;
+      k = k.trim().slice(0, 30);
+      if (k && t.indexOf(k) < 0 && t.length < 19) t.push(k);
+    });
+    if (t.indexOf(BOSHQA) < 0) t.push(BOSHQA);
+    return t;
+  }
+  let KATEGORIYALAR = STANDART.slice();
+  try {
+    const saqlangan = JSON.parse(localStorage.getItem("kategoriyalar"));
+    if (Array.isArray(saqlangan) && saqlangan.length) KATEGORIYALAR = kategoriyaTozala(saqlangan);
+  } catch (e) {}
   const OYLAR = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
   // ===== 2. YORDAMCHI FUNKSIYALAR =====
@@ -157,13 +298,25 @@ try {
   // ===== 3. MA'LUMOT: yuklash, tekshirish, saqlash =====
   // Har yozuvni tekshiradi va eski yozuvlarga yetishmagan maydonlarni qo'shadi
   function tozala(royxat) {
+    const ishlatilgan = {};
     return royxat
-      .filter(function (y) { return y && typeof y.nom === "string" && isFinite(y.miqdor) && isFinite(y.narx); })
+      .filter(function (y) {
+        return y && typeof y.nom === "string" && y.narx !== null && y.narx !== "" &&
+               Number(y.miqdor) > 0 && Number(y.narx) >= 0; // miqdor > 0, narx >= 0
+      })
       .map(function (y, i) {
+        let id = y.id || Date.now() + i;
+        while (ishlatilgan[id]) id++;              // id takrorlansa, yangisini beramiz
+        ishlatilgan[id] = true;
+        let kat = typeof y.kategoriya === "string" ? y.kategoriya.trim().slice(0, 30) : "";
+        if (!kat) kat = BOSHQA;
+        if (KATEGORIYALAR.indexOf(kat) < 0) { // yangi kategoriya (masalan, zaxira fayldan): ro'yxatga qo'shamiz
+          if (KATEGORIYALAR.length < 20) KATEGORIYALAR.push(kat); else kat = BOSHQA;
+        }
         return {
-          id: y.id || Date.now() + i,
+          id: id,
           nom: y.nom.trim() || "Nomsiz",
-          kategoriya: KATEGORIYALAR.indexOf(y.kategoriya) >= 0 ? y.kategoriya : "📦 Boshqa",
+          kategoriya: kat,
           miqdor: Number(y.miqdor),
           narx: Number(y.narx),
           izoh: y.izoh || "",
@@ -181,9 +334,19 @@ try {
     yozuvlar = [];
   }
 
+  // Brauzerdan "bu ma'lumotni xotira tozalashda o'chirma" deb so'raydi (bir marta)
+  let himoyaSoralgan = false;
+  function xotiraHimoyasi() {
+    if (himoyaSoralgan || !(navigator.storage && navigator.storage.persist)) return;
+    himoyaSoralgan = true;
+    navigator.storage.persist().catch(function () {});
+  }
+
   function saqla() {
     try {
       localStorage.setItem(KALIT, JSON.stringify(yozuvlar));
+      localStorage.setItem("kategoriyalar", JSON.stringify(KATEGORIYALAR));
+      xotiraHimoyasi();
     } catch (xato) {
       alert("Saqlab bo'lmadi. Brauzer xotirasi to'lgan bo'lishi mumkin. Zaxira nusxa oling.");
     }
@@ -192,21 +355,163 @@ try {
   // ===== 4. HOLAT =====
   let oy = bugun().slice(0, 7); // ko'rilayotgan oy: "2026-10"
   let tahrirId = null;          // tahrirlanayotgan yozuv raqami (yo'q bo'lsa null)
+  let tanlanganSana = null;     // oxirgi qo'shilgan yozuvning sanasi: keyingi yozuv ham shu sanadan boshlanadi
+
+  // Takrorlanuvchi xarajat: { id, nom, kategoriya, narx, kun (1-28), keyingi: "2026-11" (qaysi oy uchun yozilishi kerak) }
+  function takrorTozala(royxat) {
+    return (Array.isArray(royxat) ? royxat : []).filter(function (r) {
+      return r && typeof r.nom === "string" && r.nom.trim() && Number(r.narx) >= 0 && r.narx !== null && r.narx !== "" &&
+             Number(r.kun) >= 1 && Number(r.kun) <= 28 && /^\d{4}-\d{2}$/.test(r.keyingi);
+    }).map(function (r, i) {
+      return { id: r.id || Date.now() + i, nom: r.nom.trim().slice(0, 60),
+               kategoriya: KATEGORIYALAR.indexOf(r.kategoriya) >= 0 ? r.kategoriya : BOSHQA,
+               narx: Number(r.narx), kun: Math.floor(Number(r.kun)), keyingi: r.keyingi };
+    });
+  }
+  let takrorlar = [];
+  try { takrorlar = takrorTozala(JSON.parse(localStorage.getItem("takrorlar"))); } catch (e) {}
+  function saqlaTakror() { try { localStorage.setItem("takrorlar", JSON.stringify(takrorlar)); } catch (e) {} }
+  function keyingiOy(k) { // "2026-12" -> "2027-01"
+    const p = k.split("-"), d = new Date(Number(p[0]), Number(p[1]), 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+  function yangiId() { let id = Date.now(); while (yozuvlar.some(function (y) { return y.id === id; })) id++; return id; }
+
+  // Vaqti kelgan takrorlanuvchi xarajatlarni yozuv qilib qo'shadi (ilova bir necha oy ochilmagan bo'lsa, hammasini to'ldiradi)
+  function takrorQoll() {
+    let soni = 0;
+    takrorlar.forEach(function (r) {
+      for (let n = 0; n < 60; n++) {
+        const sana = r.keyingi + "-" + String(r.kun).padStart(2, "0");
+        if (sana > bugun()) break;
+        yozuvlar.push({ id: yangiId(), nom: r.nom, kategoriya: r.kategoriya, miqdor: 1, narx: r.narx, izoh: "🔁 Takrorlanuvchi", sana: sana });
+        r.keyingi = keyingiOy(r.keyingi);
+        soni++;
+      }
+    });
+    if (soni) { saqla(); saqlaTakror(); }
+    return soni;
+  }
+
+  let limit = 0; // oylik limit (0 = o'chiq)
+  try { limit = Number(localStorage.getItem("limit")) || 0; } catch (e) {}
+
+  function oyJami(oyK) { // butun oyning jami ("2026-10")
+    return yozuvlar.filter(function (y) { return y.sana.slice(0, 7) === oyK; })
+                   .reduce(function (s, y) { return s + summaOf(y); }, 0);
+  }
 
   // ===== 5. FORMA =====
-  KATEGORIYALAR.forEach(function (k) {
-    $("kategoriya").add(new Option(k, k));
-    $("filtrKat").add(new Option(k, k));
-  });
+  // Kategoriya ro'yxatlarini (forma, filtr, takrorlanuvchi, sozlamalar) qayta to'ldiradi
+  function kategoriyaToldir() {
+    const tanlangan = { kategoriya: $("kategoriya").value, filtrKat: $("filtrKat").value, takrorKat: $("takrorKat").value };
+    $("kategoriya").length = 0; $("filtrKat").length = 1; $("takrorKat").length = 0;
+    KATEGORIYALAR.forEach(function (k) {
+      $("kategoriya").add(new Option(k, k));
+      $("filtrKat").add(new Option(k, k));
+      $("takrorKat").add(new Option(k, k));
+    });
+    Object.keys(tanlangan).forEach(function (id) { if (tanlangan[id] && KATEGORIYALAR.indexOf(tanlangan[id]) >= 0) $(id).value = tanlangan[id]; });
+
+    const joy = $("katRoyxat");
+    joy.innerHTML = "";
+    KATEGORIYALAR.forEach(function (k) {
+      const q = el("div", "sat");
+      q.appendChild(el("span", "", k));
+      if (k !== BOSHQA) {
+        const t = el("button", "ikon", "✎"); t.type = "button"; t.setAttribute("aria-label", "Nomini o'zgartirish: " + k);
+        t.onclick = function () { kategoriyaNomi(k); };
+        const o = el("button", "ikon", "✕"); o.type = "button"; o.setAttribute("aria-label", "O'chirish: " + k);
+        o.onclick = function () { kategoriyaOchir(k); };
+        q.appendChild(t); q.appendChild(o);
+      }
+      joy.appendChild(q);
+    });
+  }
+  function kategoriyaOzgar() { saqla(); kategoriyaToldir(); chiz(); }
+  function kategoriyaNomiTozala(nom) { // emoji yozilmagan bo'lsa, belgi qo'shamiz
+    nom = nom.trim().slice(0, 24);
+    return nom && /^[\p{L}\p{N}]/u.test(nom) ? "🏷️ " + nom : nom;
+  }
+  function kategoriyaNomi(eski) {
+    const nom = kategoriyaNomiTozala(prompt("Yangi nom:", eski) || "");
+    if (!nom || nom === eski) return;
+    if (KATEGORIYALAR.some(function (k) { return k !== eski && k.toLowerCase() === nom.toLowerCase(); })) { alert("Bunday kategoriya bor."); return; }
+    KATEGORIYALAR[KATEGORIYALAR.indexOf(eski)] = nom;
+    yozuvlar.forEach(function (y) { if (y.kategoriya === eski) y.kategoriya = nom; });
+    takrorlar.forEach(function (r) { if (r.kategoriya === eski) r.kategoriya = nom; });
+    saqlaTakror(); kategoriyaOzgar(); takrorRoyxatChiz();
+  }
+  function kategoriyaOchir(nom) {
+    const soni = yozuvlar.filter(function (y) { return y.kategoriya === nom; }).length;
+    if (!confirm("\"" + nom + "\" o'chirilsinmi?" + (soni ? " Undagi " + soni + " ta yozuv \"" + BOSHQA + "\" ga o'tadi." : ""))) return;
+    KATEGORIYALAR = KATEGORIYALAR.filter(function (k) { return k !== nom; });
+    yozuvlar.forEach(function (y) { if (y.kategoriya === nom) y.kategoriya = BOSHQA; });
+    takrorlar.forEach(function (r) { if (r.kategoriya === nom) r.kategoriya = BOSHQA; });
+    saqlaTakror(); kategoriyaOzgar(); takrorRoyxatChiz();
+  }
+  $("katQosh").onclick = function () {
+    const nom = kategoriyaNomiTozala($("katYangi").value);
+    if (!nom) return;
+    if (KATEGORIYALAR.some(function (k) { return k.toLowerCase() === nom.toLowerCase(); })) { alert("Bunday kategoriya bor."); return; }
+    if (KATEGORIYALAR.length >= 20) { alert("Kategoriyalar soni 20 tadan oshmasin."); return; }
+    KATEGORIYALAR.splice(KATEGORIYALAR.length - 1, 0, nom); // "Boshqa" doim oxirida qoladi
+    $("katYangi").value = "";
+    kategoriyaOzgar();
+  };
+
+  // Takrorlanuvchi xarajatlar ro'yxati va qo'shish
+  function takrorRoyxatChiz() {
+    const joy = $("takrorRoyxat");
+    joy.innerHTML = "";
+    if (!takrorlar.length) { joy.appendChild(el("div", "bosh-kichik", "Hali yo'q.")); return; }
+    takrorlar.forEach(function (r) {
+      const q = el("div", "sat");
+      q.appendChild(el("span", "", "🔁 " + r.nom + " — " + pul(r.narx) + ", har oyning " + r.kun + "-kuni"));
+      const o = el("button", "ikon", "✕"); o.type = "button"; o.setAttribute("aria-label", "O'chirish: " + r.nom);
+      o.onclick = function () {
+        takrorlar = takrorlar.filter(function (x) { return x.id !== r.id; });
+        saqlaTakror(); takrorRoyxatChiz();
+      };
+      q.appendChild(o);
+      joy.appendChild(q);
+    });
+  }
+  $("takrorQosh").onclick = function () {
+    const nom = $("takrorNom").value.trim(), narx = Number($("takrorNarx").value), kk = Math.floor(Number($("takrorKun").value));
+    if (!nom || $("takrorNarx").value === "" || !(narx >= 0) || !(kk >= 1 && kk <= 28)) { alert("Nom, summa va oyning kunini (1 dan 28 gacha) to'g'ri kiriting."); return; }
+    let oyK = bugun().slice(0, 7);
+    if (kk < new Date().getDate()) oyK = keyingiOy(oyK); // bu oyning kuni o'tib ketgan bo'lsa, kelasi oydan boshlanadi
+    takrorlar.push({ id: Date.now(), nom: nom, kategoriya: $("takrorKat").value, narx: narx, kun: kk, keyingi: oyK });
+    saqlaTakror();
+    $("takrorNom").value = ""; $("takrorNarx").value = ""; $("takrorKun").value = "";
+    const q = takrorQoll();
+    takrorRoyxatChiz(); chiz();
+    if (q) toastKorsat("🔁 " + q + " ta takrorlanuvchi xarajat qo'shildi", false);
+  };
+  kategoriyaToldir();
+  takrorRoyxatChiz();
 
   function formaTozala() {
     $("forma").reset();
     tahrirId = null;
-    $("sana").value = bugun();
+    $("sana").value = tanlanganSana || bugun(); // oxirgi tanlangan sana qoladi (masalan, bir necha kunlik yozuvni ketma-ket kiritish uchun)
+    $("sana").max = bugun(); // kelajak sanasi tanlanmaydi
     $("miqdor").value = 1;
     $("tugma").textContent = "Qo'shish";
-    $("bekor").hidden = true;
+    $("varaqSarlavha").textContent = "Yangi xarajat";
   }
+
+  // Yangi xarajat oynasi: "+" tugmasi ochadi, ✕ / fon / Esc yopadi
+  function varaqOch() { $("varaq").hidden = false; document.body.classList.add("ochiq"); $("nom").focus(); }
+  function varaqYop() { $("varaq").hidden = true; document.body.classList.remove("ochiq"); formaTozala(); }
+  $("fab").onclick = function () { formaTozala(); varaqOch(); };
+  $("yop").onclick = varaqYop;
+  $("orqa").onclick = varaqYop;
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (!$("varaq").hidden) varaqYop(); else if (!$("sozlama").hidden) sozYop();
+  });
 
   $("forma").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -217,23 +522,35 @@ try {
       alert("Nom, miqdor va narxni to'g'ri kiriting.");
       return;
     }
+    if (($("sana").value || bugun()) > bugun()) {
+      alert("Kelajak sanasini kiritib bo'lmaydi.");
+      return;
+    }
     const malumot = {
       nom: nom, kategoriya: $("kategoriya").value, miqdor: miqdor, narx: narx,
       izoh: $("izoh").value.trim(), sana: $("sana").value || bugun()
     };
+    const oyK = malumot.sana.slice(0, 7);
+    const oldin = oyJami(oyK);
+    let xabar = "✓ Qo'shildi";
     if (tahrirId) {
+      xabar = "✓ Saqlandi";
       const eski = yozuvlar.find(function (y) { return y.id === tahrirId; });
       Object.assign(eski, malumot);                       // mavjud yozuvni yangilaymiz
     } else {
       yozuvlar.push(Object.assign({ id: Date.now() }, malumot)); // yangi yozuv
+      tanlanganSana = malumot.sana;
     }
-    oy = malumot.sana.slice(0, 7); // qo'shilgan yozuv oyini ko'rsatamiz
-    formaTozala();
+    oy = malumot.sana.slice(0, 7); // qo'shilgan yozuvning kuni va oyini ko'rsatamiz
+    kun = malumot.sana;
+    varaqYop();
     saqla();
     chiz();
+    const keyin = oyJami(oyK); // limitni kesib o'tganda ogohlantiramiz
+    if (limit > 0 && keyin > limit && oldin <= limit) xabar = "⚠ Oylik limitdan oshdingiz!";
+    else if (limit > 0 && keyin >= limit * 0.8 && oldin < limit * 0.8 && keyin <= limit) xabar = "⚠ Limitning 80% i sarflandi";
+    toastKorsat(xabar, false);
   });
-
-  $("bekor").onclick = formaTozala;
 
   function tahrirla(y) {
     tahrirId = y.id;
@@ -244,51 +561,118 @@ try {
     $("narx").value = y.narx;
     $("izoh").value = y.izoh;
     $("tugma").textContent = "O'zgarishni saqlash";
-    $("bekor").hidden = false;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    $("nom").focus();
+    $("varaqSarlavha").textContent = "Yozuvni tahrirlash";
+    varaqOch();
   }
 
+  let ochirilgan = null, toastVaqt = null;
+  // Pastki xabar: qaytarish=true bo'lsa "Qaytarish" tugmasi ham chiqadi
+  function toastKorsat(matn, qaytarish) {
+    $("toastMatn").textContent = matn;
+    $("qaytar").hidden = !qaytarish;
+    $("toast").hidden = false;
+    if (!qaytarish) ochirilgan = null;
+    clearTimeout(toastVaqt);
+    toastVaqt = setTimeout(function () { $("toast").hidden = true; ochirilgan = null; }, qaytarish ? 6000 : 2200);
+  }
   function ochir(y) {
-    if (!confirm("\"" + y.nom + "\" o'chirilsinmi?")) return;
-    yozuvlar = yozuvlar.filter(function (q) { return q.id !== y.id; });
-    if (tahrirId === y.id) formaTozala();
+    const joyi = yozuvlar.findIndex(function (q) { return q.id === y.id; });
+    if (joyi < 0) return;
+    ochirilgan = { y: y, joyi: joyi };       // qaytarish uchun eslab qolamiz
+    yozuvlar.splice(joyi, 1);
+    if (tahrirId === y.id) varaqYop();
     saqla();
     chiz();
+    toastKorsat("\"" + y.nom + "\" o'chirildi", true);
+  }
+  $("qaytar").onclick = function () {
+    if (!ochirilgan) return;
+    yozuvlar.splice(ochirilgan.joyi, 0, ochirilgan.y);
+    ochirilgan = null;
+    $("toast").hidden = true;
+    saqla();
+    chiz();
+  };
+
+  // ===== 6. KO'RINISH: KUN yoki OY =====
+  let korinish = "kun"; // "kun": faqat tanlangan kun | "oy": butun oy, kunlar bo'yicha
+  let kun = bugun();    // ko'rilayotgan kun: "2026-10-04"
+
+  function kunNomi(sana) {
+    const p = sana.split("-");
+    return Number(p[2]) + "-" + OYLAR[Number(p[1]) - 1].toLowerCase() + " " + p[0] + (sana === bugun() ? " (bugun)" : "");
   }
 
-  // ===== 6. OY TANLASH =====
-  function oyOzgar(d) {
-    const p = oy.split("-");
-    const sana = new Date(Number(p[0]), Number(p[1]) - 1 + d, 1);
-    oy = sana.getFullYear() + "-" + String(sana.getMonth() + 1).padStart(2, "0");
+  // ◀ ▶ tugmalari: kun ko'rinishida 1 kunga, oy ko'rinishida 1 oyga suradi
+  function surish(d) {
+    if (korinish === "kun") {
+      const p = kun.split("-");
+      kun = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]) + d).toLocaleDateString("sv-SE");
+      oy = kun.slice(0, 7);
+    } else {
+      const p = oy.split("-");
+      const sana = new Date(Number(p[0]), Number(p[1]) - 1 + d, 1);
+      oy = sana.getFullYear() + "-" + String(sana.getMonth() + 1).padStart(2, "0");
+    }
     chiz();
   }
-  $("oldingi").onclick = function () { oyOzgar(-1); };
-  $("keyingi").onclick = function () { oyOzgar(1); };
+  $("oldingi").onclick = function () { surish(-1); };
+  $("keyingi").onclick = function () { surish(1); };
+
+  function korinishTanla(k) {
+    korinish = k;
+    if (k === "kun" && kun.slice(0, 7) !== oy) kun = oy === bugun().slice(0, 7) ? bugun() : oy + "-01";
+    chiz();
+  }
+  $("rejimKun").onclick = function () { korinishTanla("kun"); };
+  $("rejimOy").onclick = function () { korinishTanla("oy"); };
 
   // ===== 7. CHIZISH =====
   function chiz() {
-    const p = oy.split("-");
-    $("oyNomi").textContent = OYLAR[Number(p[1]) - 1] + " " + p[0];
+    const kunRejim = korinish === "kun";
+    let oraliq; // ekranda hisobga olinadigan yozuvlar: faqat shu kun yoki shu oy
+    if (kunRejim) {
+      oraliq = yozuvlar.filter(function (y) { return y.sana === kun; });
+      $("oyNomi").textContent = kunNomi(kun);
+      $("keyingi").disabled = kun >= bugun();
+    } else {
+      const p = oy.split("-");
+      oraliq = yozuvlar.filter(function (y) { return y.sana.slice(0, 7) === oy; });
+      $("oyNomi").textContent = OYLAR[Number(p[1]) - 1] + " " + p[0];
+      $("keyingi").disabled = oy >= bugun().slice(0, 7);
+    }
+    $("rejimKun").classList.toggle("faol", kunRejim);
+    $("rejimOy").classList.toggle("faol", !kunRejim);
+    $("kunlarKarta").hidden = kunRejim || !oraliq.length;
+    if (!kunRejim) kunlarChiz(oraliq);
+    limitChiz(kunRejim ? kun.slice(0, 7) : oy);
+    $("grafikKarta").hidden = kunRejim; // kun ko'rinishida grafik keraksiz: oy ko'rinishida chiqadi
 
-    const oydagi = yozuvlar.filter(function (y) { return y.sana.slice(0, 7) === oy; });
-    hisobotChiz(oydagi, Number(p[0]), Number(p[1]));
-    grafikChiz(oydagi);
-    royxatChiz(oydagi);
+    hisobotChiz(oraliq, kunRejim);
+    grafikChiz(oraliq);
+    royxatChiz(oraliq);
+    zaxiraEslatma();
   }
 
-  // Jami, kunlik o'rtacha, eng katta xarajat
-  function hisobotChiz(oydagi, yil, oyRaqam) {
-    const jami = oydagi.reduce(function (s, y) { return s + summaOf(y); }, 0);
-    const buOy = oy === bugun().slice(0, 7);
-    const kunlar = buOy ? new Date().getDate() : new Date(yil, oyRaqam, 0).getDate(); // oyda nechta kun o'tgan
-
+  // Jami, o'rtacha, eng katta xarajat (kun yoki oy uchun)
+  function hisobotChiz(oraliq, kunRejim) {
+    const jami = oraliq.reduce(function (s, y) { return s + summaOf(y); }, 0);
     $("jami").textContent = pul(jami);
-    $("ortacha").textContent = pul(jami / kunlar);
+
+    if (kunRejim) {
+      $("jamiNom").textContent = "Shu kunda jami";
+      $("ortachaNom").textContent = "O'rtacha xarajat (" + oraliq.length + " ta)";
+      $("ortacha").textContent = oraliq.length ? pul(jami / oraliq.length) : "—";
+    } else {
+      const p = oy.split("-");
+      const kunlar = oy === bugun().slice(0, 7) ? new Date().getDate() : new Date(Number(p[0]), Number(p[1]), 0).getDate(); // oyda nechta kun o'tgan
+      $("jamiNom").textContent = "Shu oyda jami";
+      $("ortachaNom").textContent = "Kunlik o'rtacha";
+      $("ortacha").textContent = pul(jami / kunlar);
+    }
 
     let eng = null;
-    oydagi.forEach(function (y) { if (!eng || summaOf(y) > summaOf(eng)) eng = y; });
+    oraliq.forEach(function (y) { if (!eng || summaOf(y) > summaOf(eng)) eng = y; });
     $("eng").textContent = eng ? eng.nom + ": " + pul(summaOf(eng)) : "—";
   }
 
@@ -321,28 +705,118 @@ try {
     });
   }
 
-  // Yozuvlar ro'yxati: qidiruv va filtr bilan, kunlar bo'yicha guruhlangan
-  function royxatChiz(oydagi) {
+  // Oylik limit: sarflangan / limit, qolgan summa va kuniga qancha sarflash mumkin
+  function limitChiz(oyK) {
+    $("limitKarta").hidden = !(limit > 0);
+    if (!(limit > 0)) return;
+    const sarf = oyJami(oyK), foiz = Math.round(sarf / limit * 100);
+    $("limitNom").textContent = "Oylik limit: " + pul(sarf) + " / " + pul(limit);
+    $("limitFoiz").textContent = foiz + "%";
+    const c = $("limitChiziq");
+    c.style.width = Math.min(foiz, 100) + "%";
+    c.className = foiz > 100 ? "oshdi" : foiz >= 80 ? "ogoh" : "";
+    let matn;
+    if (sarf > limit) {
+      matn = "Limitdan " + pul(sarf - limit) + " oshdi.";
+    } else {
+      matn = "Qoldi: " + pul(limit - sarf);
+      if (oyK === bugun().slice(0, 7)) { // joriy oy: qolgan kunlarga bo'lamiz (bugun ham hisobda)
+        const d = new Date();
+        const qolgan = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - d.getDate() + 1;
+        matn += " (kuniga ≈ " + pul((limit - sarf) / qolgan) + ")";
+      }
+    }
+    $("limitQoldi").textContent = matn;
+  }
+
+  // Oyning har kuni uchun ustunli grafik. Ustunni bossang, o'sha kun ochiladi
+  function kunlarChiz(oraliq) {
+    const joy = $("kunlar");
+    joy.innerHTML = "";
+    const p = oy.split("-");
+    const soni = new Date(Number(p[0]), Number(p[1]), 0).getDate();
+    const yigindi = {};
+    let eng = 0;
+    oraliq.forEach(function (y) { yigindi[y.sana] = (yigindi[y.sana] || 0) + summaOf(y); });
+    Object.keys(yigindi).forEach(function (k) { if (yigindi[k] > eng) eng = yigindi[k]; });
+    $("kunOxiri").textContent = soni;
+
+    for (let d = 1; d <= soni; d++) {
+      const sana = oy + "-" + String(d).padStart(2, "0");
+      const q = yigindi[sana] || 0;
+      const b = el("button", "ustun" + (sana === bugun() ? " bugun" : "") + (q ? "" : " bosh"));
+      b.type = "button";
+      b.disabled = sana > bugun(); // kelajak kunlari ochilmaydi
+      b.title = d + "-" + OYLAR[Number(p[1]) - 1].toLowerCase() + ": " + pul(q);
+      b.setAttribute("aria-label", b.title);
+      const i = el("i");
+      i.style.height = (eng ? Math.max(q / eng * 100, 3) : 3) + "%";
+      b.appendChild(i);
+      b.onclick = function () {
+        korinish = "kun"; kun = sana; oy = sana.slice(0, 7);
+        chiz();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+      joy.appendChild(b);
+    }
+  }
+
+  // Bitta yozuv qatori
+  function qatorChiz(y) {
+    const qator = el("div", "yozuv");
+    qator.appendChild(el("span", "em", y.kategoriya.split(" ")[0]));
+
+    const matn = el("div", "matn");
+    matn.appendChild(el("div", "nom", y.nom));
+    matn.appendChild(el("div", "tafsilot", y.miqdor + " × " + pul(y.narx) + (y.izoh ? " · " + y.izoh : "")));
+    qator.appendChild(matn);
+    qator.appendChild(el("span", "summa", pul(summaOf(y))));
+
+    const t = el("button", "ikon", "✎");
+    t.title = "Tahrirlash";
+    t.setAttribute("aria-label", "Tahrirlash");
+    t.onclick = function () { tahrirla(y); };
+    const o = el("button", "ikon ochir", "✕");
+    o.title = "O'chirish";
+    o.setAttribute("aria-label", "O'chirish");
+    o.onclick = function () { ochir(y); };
+    qator.appendChild(t);
+    qator.appendChild(o);
+    return qator;
+  }
+
+  // Yozuvlar ro'yxati: qidiruv va kategoriya filtri bilan
+  function royxatChiz(oraliq) {
     const joy = $("royxat");
     joy.innerHTML = "";
     const soz = $("qidir").value.trim().toLowerCase();
     const kat = $("filtrKat").value;
+    $("filtrKarta").hidden = !(oraliq.length >= 6 || soz || kat); // qidiruv faqat ro'yxat uzun bo'lganda chiqadi
 
-    const korinadigan = oydagi.filter(function (y) {
+    const korinadigan = oraliq.filter(function (y) {
       const matn = (y.nom + " " + y.izoh).toLowerCase();
       return (!soz || matn.indexOf(soz) >= 0) && (!kat || y.kategoriya === kat);
     });
     if (!korinadigan.length) {
-      joy.appendChild(el("div", "bosh", oydagi.length ? "Hech narsa topilmadi." : "Yozuv yo'q. Yuqoridagi forma orqali birinchisini qo'shing."));
+      const xabar = oraliq.length ? "Hech narsa topilmadi."
+        : korinish === "kun" ? "Bu kunda xarajat yo'q."
+        : "Yozuv yo'q. Yuqoridagi forma orqali birinchisini qo'shing.";
+      joy.appendChild(el("div", "bosh", xabar));
       return;
     }
 
+    // KUN ko'rinishi: faqat shu kunning yozuvlari
+    if (korinish === "kun") {
+      korinadigan.sort(function (a, b) { return b.id - a.id; }).forEach(function (y) { joy.appendChild(qatorChiz(y)); });
+      return;
+    }
+
+    // OY ko'rinishi: kunlar bo'yicha guruhlanadi. Kun sarlavhasini bossang, o'sha kunga o'tadi
     const kunlar = {};
     korinadigan.forEach(function (y) {
       if (!kunlar[y.sana]) kunlar[y.sana] = [];
       kunlar[y.sana].push(y);
     });
-
     Object.keys(kunlar).sort().reverse().forEach(function (sana) {
       const guruh = kunlar[sana].sort(function (a, b) { return b.id - a.id; });
       const kunJami = guruh.reduce(function (s, y) { return s + summaOf(y); }, 0);
@@ -350,33 +824,17 @@ try {
       const p = sana.split("-");
       const nomi = Number(p[2]) + "-" + OYLAR[Number(p[1]) - 1].toLowerCase() + (sana === bugun() ? " (bugun)" : "");
       const sarlavha = el("h3");
+      sarlavha.style.cursor = "pointer";
+      sarlavha.title = "Shu kunni ochish";
       sarlavha.appendChild(el("span", "", nomi));
-      sarlavha.appendChild(el("span", "", pul(kunJami)));
+      sarlavha.appendChild(el("span", "", pul(kunJami) + "  ›"));
+      sarlavha.onclick = function () {
+        korinish = "kun"; kun = sana; oy = sana.slice(0, 7);
+        chiz();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
       joy.appendChild(sarlavha);
-
-      guruh.forEach(function (y) {
-        const qator = el("div", "yozuv");
-        qator.appendChild(el("span", "em", y.kategoriya.split(" ")[0]));
-
-        const matn = el("div", "matn");
-        matn.appendChild(el("div", "nom", y.nom));
-        matn.appendChild(el("div", "tafsilot", y.miqdor + " × " + pul(y.narx) + (y.izoh ? " · " + y.izoh : "")));
-        qator.appendChild(matn);
-
-        qator.appendChild(el("span", "summa", pul(summaOf(y))));
-
-        const t = el("button", "ikon", "✎");
-        t.title = "Tahrirlash";
-        t.setAttribute("aria-label", "Tahrirlash");
-        t.onclick = function () { tahrirla(y); };
-        const o = el("button", "ikon ochir", "✕");
-        o.title = "O'chirish";
-        o.setAttribute("aria-label", "O'chirish");
-        o.onclick = function () { ochir(y); };
-        qator.appendChild(t);
-        qator.appendChild(o);
-        joy.appendChild(qator);
-      });
+      guruh.forEach(function (y) { joy.appendChild(qatorChiz(y)); });
     });
   }
 
@@ -384,12 +842,38 @@ try {
   $("filtrKat").addEventListener("change", chiz);
 
   // ===== 8. ZAXIRA NUSXA VA TIKLASH =====
+  // Zaxira olinmaganiga 7 kun bo'lsa eslatma chiqaradi (hisob birinchi ochilgan kundan boshlanadi)
+  function kunFarqi(a, b) { // "2026-10-03" va "2026-10-10" orasida nechta kun
+    const p = a.split("-"), q = b.split("-");
+    return Math.round((Date.UTC(q[0], q[1] - 1, q[2]) - Date.UTC(p[0], p[1] - 1, p[2])) / 86400000);
+  }
+  function zaxiraEslatma() {
+    let sana = null, olingan = false;
+    try {
+      sana = localStorage.getItem("oxirgiZaxira");
+      olingan = !!sana;
+      if (!sana && yozuvlar.length > 0) { // hali zaxira olinmagan: birinchi yozuv paydo bo'lgan kundan hisoblaymiz
+        sana = localStorage.getItem("zaxiraBoshi");
+        if (!sana) { sana = bugun(); localStorage.setItem("zaxiraBoshi", sana); }
+      }
+    } catch (e) {}
+    const otgan = sana ? kunFarqi(sana, bugun()) : 0;
+    $("eslatma").hidden = !(yozuvlar.length > 0 && otgan >= 7);
+    $("eslatmaMatn").textContent = olingan
+      ? "Oxirgi zaxira nusxadan beri " + otgan + " kun o'tdi."
+      : "Zaxira nusxa olmaganingizga " + otgan + " kun bo'ldi.";
+  }
+  $("eslatmaTugma").onclick = function () { $("eksportTugma").click(); };
+
   $("eksportTugma").onclick = function () {
-    const blob = new Blob([JSON.stringify(yozuvlar, null, 2)], { type: "application/json" });
+    const paket = { versiya: 3, yozuvlar: yozuvlar, kategoriyalar: KATEGORIYALAR, takrorlar: takrorlar, limit: limit };
+    const blob = new Blob([JSON.stringify(paket, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "xarajatlar-zaxira-" + bugun() + ".json";
     a.click();
+    try { localStorage.setItem("oxirgiZaxira", bugun()); } catch (e) {}
+    zaxiraEslatma();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
   };
 
@@ -400,17 +884,24 @@ try {
     if (!fayl) return;
     const oqigich = new FileReader();
     oqigich.onload = function () {
+      const eskiKat = KATEGORIYALAR.slice(); // bekor qilinsa yoki xato bo'lsa, qaytarish uchun
       try {
         const xom = JSON.parse(oqigich.result);
-        if (!Array.isArray(xom)) throw new Error("noto'g'ri fayl");
-        const yangi = tozala(xom);
-        if (!yangi.length && xom.length) throw new Error("yozuvlar o'qilmadi");
+        const paket = Array.isArray(xom) ? { yozuvlar: xom } : xom; // eski zaxira (faqat ro'yxat) ham, yangisi ham ishlaydi
+        if (!paket || !Array.isArray(paket.yozuvlar)) throw new Error("noto'g'ri fayl");
+        if (Array.isArray(paket.kategoriyalar)) KATEGORIYALAR = kategoriyaTozala(paket.kategoriyalar);
+        const yangi = tozala(paket.yozuvlar);
+        if (!yangi.length && paket.yozuvlar.length) throw new Error("yozuvlar o'qilmadi");
         if (confirm(yangi.length + " ta yozuv tiklansinmi? Hozirgilari almashtiriladi.")) {
           yozuvlar = yangi;
-          saqla();
-          chiz();
+          if (Array.isArray(paket.takrorlar)) takrorlar = takrorTozala(paket.takrorlar);
+          if (paket.limit !== undefined) { limit = Number(paket.limit) > 0 ? Number(paket.limit) : 0; try { localStorage.setItem("limit", String(limit)); } catch (e) {} }
+          saqla(); saqlaTakror(); kategoriyaToldir(); takrorRoyxatChiz(); chiz();
+        } else {
+          KATEGORIYALAR = eskiKat;
         }
       } catch (xato) {
+        KATEGORIYALAR = eskiKat;
         console.log(xato);
         alert("Fayl o'qilmadi. To'g'ri zaxira faylini tanlang.");
       }
@@ -418,6 +909,44 @@ try {
     oqigich.readAsText(fayl);
     this.value = "";
   };
+
+  // Excel uchun CSV: ";" bilan ajratilgan, UTF-8 (BOM), o'nlik vergul bilan
+  $("csvTugma").onclick = function () {
+    const xavfsiz = function (v) { // qo'shtirnoqlarni himoyalaydi; "=" bilan boshlangan matn formula bo'lib ketmasin
+      let t = String(v);
+      if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+      return "\"" + t.replace(/"/g, "\"\"") + "\"";
+    };
+    const son = function (n) { return String(Math.round(n * 100) / 100).replace(".", ","); };
+    const qatorlar = [["Sana", "Nomi", "Kategoriya", "Miqdori", "Narxi", "Summa", "Izoh"].map(xavfsiz).join(";")];
+    yozuvlar.slice().sort(function (a, b) { return a.sana < b.sana ? 1 : a.sana > b.sana ? -1 : b.id - a.id; }).forEach(function (y) {
+      qatorlar.push([y.sana, y.nom, y.kategoriya, son(y.miqdor), son(y.narx), son(summaOf(y)), y.izoh].map(xavfsiz).join(";"));
+    });
+    const blob = new Blob(["\uFEFF" + qatorlar.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "xarajatlar-" + bugun() + ".csv";
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  };
+
+  // ===== SOZLAMALAR OYNASI =====
+  function sozOch() {
+    $("limitKirish").value = limit || "";
+    $("sozlama").hidden = false;
+    document.body.classList.add("ochiq");
+  }
+  function sozYop() { // yopilganda limit saqlanadi
+    const v = Number($("limitKirish").value);
+    limit = v > 0 ? v : 0;
+    try { localStorage.setItem("limit", String(limit)); } catch (e) {}
+    $("sozlama").hidden = true;
+    document.body.classList.remove("ochiq");
+    chiz();
+  }
+  $("sozTugma").onclick = sozOch;
+  $("sozYop").onclick = sozYop;
+  $("sozOrqa").onclick = sozYop;
 
   // ===== 9. QORONG'I REJIM =====
   function temaBelgisi() {
@@ -430,10 +959,44 @@ try {
     temaBelgisi();
   };
 
+  // Serverdagi index.html ning versiyasini o'qib, ochiq ilovaga yangilanish borligini ko'rsatadi
+  function yangilanishTekshir() {
+    if (typeof fetch !== "function" || location.protocol.indexOf("http") !== 0 || location.hostname === "127.0.0.1" || location.hostname === "localhost") return;
+    fetch("./index.html", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (matn) {
+        const m = /const VERSIYA = "([^"]+)"/.exec(matn);
+        if (m && m[1] !== VERSIYA) $("yangilanish").hidden = false;
+      })
+      .catch(function () {}); // internet yo'q: jim o'tamiz
+  }
+  $("yangilashTugma").onclick = function () { location.reload(); };
+
   // ===== 10. BOSHLASH =====
+  $("versiya").textContent = "Xarajatlarim · v" + VERSIYA;
+  const boshlandi = takrorQoll(); // vaqti kelgan takrorlanuvchi xarajatlar
   formaTozala();
   temaBelgisi();
   chiz();
+  if (boshlandi) toastKorsat("🔁 " + boshlandi + " ta takrorlanuvchi xarajat qo'shildi", false);
+  setTimeout(yangilanishTekshir, 3000);
+
+  // Ilova fonda turib, yangi kunda ochilsa: sana, oy va hisob yangilanadi
+  let korilganKun = bugun();
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") return;
+    yangilanishTekshir();
+    if (bugun() === korilganKun) return;
+    if (kun === korilganKun) kun = bugun(); // bugunni ko'rib turgan bo'lsa, yangi bugunga o'tadi
+    if (oy === korilganKun.slice(0, 7)) oy = bugun().slice(0, 7);
+    korilganKun = bugun();
+    tanlanganSana = null; // yangi kunda yana bugundan boshlanadi
+    $("sana").max = bugun();
+    if (!tahrirId) $("sana").value = bugun();
+    const q = takrorQoll(); // yangi kun: takrorlanuvchi xarajatlar vaqti kelgan bo'lishi mumkin
+    chiz();
+    if (q) toastKorsat("🔁 " + q + " ta takrorlanuvchi xarajat qo'shildi", false);
+  });
 
   // Internetsiz ishlash (kompyuterdagi sinovda o'chiq)
   if ("serviceWorker" in navigator && location.hostname !== "127.0.0.1" && location.hostname !== "localhost") {
